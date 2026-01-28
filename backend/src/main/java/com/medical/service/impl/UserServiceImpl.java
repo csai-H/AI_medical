@@ -160,6 +160,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         patientService.save(patient);
 
+        // 根据用户角色字段创建用户-角色关联
+        createUserRoleAssociation(user.getId(), user.getRole());
+
+        log.info("患者用户注册成功: {}, 角色关联已创建", username);
         return user;
     }
 
