@@ -81,6 +81,11 @@ public class Patient {
     private String remark;
 
     /**
+     * 关联的用户ID
+     */
+    private Long userId;
+
+    /**
      * 创建人ID
      */
     private Long createBy;

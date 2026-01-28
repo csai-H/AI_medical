@@ -53,14 +53,29 @@ public class AuthController {
                 return Result.error("两次密码不一致");
             }
 
-            // 注册用户
-            User user = userService.registerUser(
-                registerDTO.getUsername(),
-                registerDTO.getPassword(),
-                registerDTO.getRealName(),
-                registerDTO.getPhone(),
-                registerDTO.getEmail()
-            );
+            // 注册用户（如果是患者注册，使用registerPatientUser方法）
+            User user;
+            if (registerDTO.getGender() != null && registerDTO.getAge() != null) {
+                // 患者注册：同时创建用户和患者记录
+                user = userService.registerPatientUser(
+                    registerDTO.getUsername(),
+                    registerDTO.getPassword(),
+                    registerDTO.getRealName(),
+                    registerDTO.getPhone(),
+                    registerDTO.getEmail(),
+                    registerDTO.getGender(),
+                    registerDTO.getAge()
+                );
+            } else {
+                // 普通用户注册
+                user = userService.registerUser(
+                    registerDTO.getUsername(),
+                    registerDTO.getPassword(),
+                    registerDTO.getRealName(),
+                    registerDTO.getPhone(),
+                    registerDTO.getEmail()
+                );
+            }
 
             // 注册成功后自动登录
             StpUtil.login(user.getId());

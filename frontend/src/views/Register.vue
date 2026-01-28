@@ -49,6 +49,28 @@
           />
         </el-form-item>
 
+        <el-form-item prop="gender">
+          <el-select
+            v-model="registerForm.gender"
+            placeholder="请选择性别"
+            size="large"
+            style="width: 100%"
+          >
+            <el-option label="男" :value="1" />
+            <el-option label="女" :value="0" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item prop="age">
+          <el-input
+            v-model="registerForm.age"
+            type="number"
+            placeholder="请输入年龄"
+            size="large"
+            prefix-icon="Calendar"
+          />
+        </el-form-item>
+
         <el-form-item prop="password">
           <el-input
             v-model="registerForm.password"
@@ -109,6 +131,8 @@ const registerForm = ref({
   realName: '',
   phone: '',
   email: '',
+  gender: null,
+  age: null,
   password: '',
   confirmPassword: ''
 })
@@ -167,6 +191,23 @@ const registerRules = {
   ],
   email: [
     { validator: validateEmail, trigger: 'blur' }
+  ],
+  gender: [
+    { required: true, message: '请选择性别', trigger: 'change' }
+  ],
+  age: [
+    { required: true, message: '请输入年龄', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        const age = Number(value)
+        if (isNaN(age) || age < 0 || age > 150) {
+          callback(new Error('年龄范围在0-150之间'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },

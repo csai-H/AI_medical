@@ -1,18 +1,22 @@
 package com.medical.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.medical.dto.LoginDTO;
+import com.medical.entity.Patient;
 import com.medical.entity.User;
 import com.medical.mapper.UserMapper;
 import com.medical.exception.BusinessException;
+import com.medical.service.PatientService;
 import com.medical.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 /**
@@ -23,6 +27,8 @@ import org.springframework.util.StringUtils;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
+    private final PatientService patientService;
 
     @Override
     public String login(LoginDTO loginDTO) {
@@ -105,6 +111,50 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         this.save(user);
         return user;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public User registerPatientUser(String username, String password, String realName, String phone, String email, Integer gender, Integer age) {
+        // 检查用户名是否已存在
+        LambdaQueryWrapper<User> checkWrapper = new LambdaQueryWrapper<>();
+        checkWrapper.eq(User::getUsername, username);
+        if (this.getOne(checkWrapper) != null) {
+            throw new BusinessException("用户名已存在");
+        }
+
+        // 创建新用户
+        User user = new User();
+        user.setUsername(username);
+        // 使用BCrypt加密密码
+        user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
+        user.setRealName(realName);
+        user.setPhone(phone);
+        user.setEmail(email);
+        user.setRole(2); // 默认为普通用户（患者）
+        user.setStatus(1); // 默认启用
+
+        this.save(user);
+
+        // 同时创建患者记录
+        Patient patient = new Patient();
+        patient.setPatientNo(generatePatientNo());
+        patient.setName(realName);
+        patient.setGender(gender);
+        patient.setAge(age);
+        patient.setPhone(phone);
+        patient.setUserId(user.getId()); // 关联用户ID
+
+        patientService.save(patient);
+
+        return user;
+    }
+
+    /**
+     * 生成患者编号
+     */
+    private String generatePatientNo() {
+        return "P" + System.currentTimeMillis() + IdUtil.randomUUID().substring(0, 4).toUpperCase();
     }
 
     @Override

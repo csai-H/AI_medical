@@ -32,6 +32,16 @@ public class RegisterDTO {
     @Email(message = "邮箱格式不正确")
     private String email;
 
+    /**
+     * 性别: 0-女, 1-男
+     */
+    private Integer gender;
+
+    /**
+     * 年龄
+     */
+    private Integer age;
+
     public String getUsername() {
         return username;
     }
@@ -78,5 +88,21 @@ public class RegisterDTO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Integer getGender() {
+        return gender;
+    }
+
+    public void setGender(Integer gender) {
+        this.gender = gender;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
     }
 }

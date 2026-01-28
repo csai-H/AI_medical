@@ -57,6 +57,20 @@ public interface UserService extends IService<User> {
     User registerUser(String username, String password, String realName, String phone, String email);
 
     /**
+     * 患者用户注册（同时创建患者记录）
+     *
+     * @param username 用户名
+     * @param password 密码（明文，方法内会加密）
+     * @param realName 真实姓名
+     * @param phone 手机号
+     * @param email 邮箱
+     * @param gender 性别: 0-女, 1-男
+     * @param age 年龄
+     * @return 注册成功的用户
+     */
+    User registerPatientUser(String username, String password, String realName, String phone, String email, Integer gender, Integer age);
+
+    /**
      * 创建用户（管理员）
      *
      * @param username 用户名

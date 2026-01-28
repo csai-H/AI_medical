@@ -64,13 +64,16 @@ CREATE TABLE patient (
     past_history TEXT,
     family_history TEXT,
     remark TEXT,
+    user_id BIGINT COMMENT '关联的用户ID',
     create_by BIGINT,
     deleted INT DEFAULT 0,
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_patient_no (patient_no),
     INDEX idx_name (name),
-    INDEX idx_phone (phone)
+    INDEX idx_phone (phone),
+    INDEX idx_user_id (user_id),
+    FOREIGN KEY (user_id) REFERENCES sys_user(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='患者表';
 
 -- Diagnosis Record Table
