@@ -6,6 +6,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.Arrays;
+
 /**
  * 跨域配置类
  *
@@ -18,8 +20,12 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // 允许所有域名跨域
-        config.addAllowedOriginPattern("*");
+        // 允许的域名
+        config.setAllowedOrigins(Arrays.asList(
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://localhost:8080"
+        ));
 
         // 允许所有请求头
         config.addAllowedHeader("*");

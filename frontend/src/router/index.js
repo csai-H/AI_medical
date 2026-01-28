@@ -54,6 +54,18 @@ const routes = [
         name: 'Settings',
         component: () => import('@/views/Settings.vue'),
         meta: { title: '系统设置', icon: 'Setting' }
+      },
+      {
+        path: 'user-management',
+        name: 'UserManagement',
+        component: () => import('@/views/UserManagement.vue'),
+        meta: { title: '用户管理', icon: 'UserFilled', permission: 'user:list' }
+      },
+      {
+        path: 'change-password',
+        name: 'ChangePassword',
+        component: () => import('@/views/ChangePassword.vue'),
+        meta: { title: '修改密码', icon: 'Lock', hidden: true }
       }
     ]
   }
@@ -68,13 +80,29 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
 
+  // 未登录跳转登录页
   if (to.path !== '/login' && !userStore.token) {
     next('/login')
-  } else if (to.path === '/login' && userStore.token) {
-    next('/')
-  } else {
-    next()
+    return
   }
+
+  // 已登录访问登录页，跳转到首页
+  if (to.path === '/login' && userStore.token) {
+    next('/')
+    return
+  }
+
+  // 权限验证
+  if (to.meta.permission) {
+    const permissions = userStore.userInfo?.permissions || []
+    if (!permissions.includes(to.meta.permission)) {
+      // 显示403错误或跳转到无权限页面
+      next('/dashboard')
+      return
+    }
+  }
+
+  next()
 })
 
 export default router

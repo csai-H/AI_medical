@@ -34,6 +34,21 @@ public class SaTokenConfig implements WebMvcConfigurer {
                         "/webjars/**",
                         "/favicon.ico"
                 );
+
+        // 注册SaToken权限拦截器，校验规则为StpUtil.checkLogin()登录校验
+        // 权限校验在具体业务方法中使用@SaCheckPermission注解
+        registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin()))
+                .addPathPatterns(
+                        "/user/**",
+                        "/patient/**",
+                        "/diagnosis/**",
+                        "/system/**"
+                )
+                .excludePathPatterns(
+                        "/auth/**",
+                        "/diagnosis/chat",  // AI问诊接口不需要权限验证（仅用于测试）
+                        "/ws/**"
+                );
     }
 
 }

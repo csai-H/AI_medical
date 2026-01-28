@@ -10,7 +10,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/ai_medical
     username: root
-    password: 123456
+    password: ${DB_PASSWORD:123456}
 
   # Redis配置（暂时禁用，使用内存存储）
   # data:
@@ -56,7 +56,7 @@ sa-token:
   token-style: uuid
   is-log: false
   is-print: false
-  jwt-secret-key: abcdefghijklmnopqrstuvwxyz
+  jwt-secret-key: ${SA_TOKEN_JWT_SECRET:kP8fD2hL5mN9qR3tV6wY4zB7xC0vF1sG4hJ2kM5nP8q}
 
 # 讯飞星火配置（暂时不用）
 spark:
@@ -72,6 +72,14 @@ zhipu:
     key: 8f8131f0fbf24f048f179ce7341c8416.wf39UevytBH8x4Rp
     model: glm-4
     url: https://open.bigmodel.cn/api/paas/v4/chat/completions
+
+# 应用配置
+app:
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+      - http://localhost:3000
+      - http://localhost:8080
 
 # 日志配置
 logging:
