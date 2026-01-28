@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { login as loginApi, getUserInfo, getMenu } from '@/api/auth'
+import router from '@/router'
 import { addDynamicRoutes } from '@/router'
 
 export const useUserStore = defineStore('user', () => {
@@ -30,6 +31,20 @@ export const useUserStore = defineStore('user', () => {
     localStorage.setItem('menus', JSON.stringify(menus.value))
     // 添加动态路由
     addDynamicRoutes(menus.value)
+    
+    // 等待 Vue Router 完全注册路由
+    // nextTick 确保 DOM 更新，但路由注册可能需要更长时间
+    await nextTick()
+    
+    // 验证路由是否真的添加成功
+    const routes = router.getRoutes()
+    const layoutRoute = routes.find(r => r.name === 'Layout')
+    console.log('Layout 路由检查:', layoutRoute ? {
+      name: layoutRoute.name,
+      path: layoutRoute.path,
+      childrenCount: layoutRoute.children?.length || 0
+    } : '未找到')
+    
     // 路由添加完成后再标记为已加载
     menusLoaded.value = true
   }

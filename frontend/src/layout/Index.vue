@@ -74,16 +74,28 @@ const userStore = useUserStore()
 // 菜单路由
 const menuRoutes = computed(() => {
   // 直接从路由配置中获取子路由
-  const mainRoute = router.getRoutes().find(r => r.path === '/')
-  if (!mainRoute || !mainRoute.children) {
+  const allRoutes = router.getRoutes()
+  const layoutRoute = allRoutes.find(r => r.name === 'Layout')
+  
+  if (!layoutRoute) {
+    console.log('未找到 Layout 路由')
     return []
   }
 
-  return mainRoute.children
-    .filter(r => r.meta && r.meta.title && !r.meta.hidden)
+  // 获取所有以 / 开头的二级路由（这些是 Layout 的子路由）
+  const routes = allRoutes
+    .filter(r => {
+      // 过滤出有 title 且不隐藏的路由
+      if (!r.meta || !r.meta.title || r.meta.hidden) return false
+      // 路径应该是一级路径（如 /dashboard）且不是根路径
+      if (!r.path.match(/^\/[^/]+$/) || r.path === '/') return false
+      // 排除静态路由（login, register, 404）
+      if (['/login', '/register', '/404'].includes(r.path)) return false
+      return true
+    })
     .map(r => ({
       ...r,
-      path: `/${r.path}` // 确保路径是绝对路径
+      path: r.path
     }))
     .sort((a, b) => {
       const order = ['dashboard', 'patient', 'diagnosis', 'diagnosis-record', 'knowledge', 'statistics', 'settings', 'user-management', 'role-management']
@@ -91,6 +103,9 @@ const menuRoutes = computed(() => {
       const pathB = b.path.replace('/', '')
       return order.indexOf(pathA) - order.indexOf(pathB)
     })
+  
+  console.log('菜单路由:', routes)
+  return routes
 })
 
 // 当前激活的菜单
