@@ -56,6 +56,12 @@ const dynamicRoutes = [
         meta: { title: '诊断记录', icon: 'Document' }
       },
       {
+        path: 'knowledge',
+        name: 'Knowledge',
+        component: () => import('@/views/Knowledge.vue'),
+        meta: { title: '知识库管理', icon: 'Reading' }
+      },
+      {
         path: 'user-management',
         name: 'UserManagement',
         component: () => import('@/views/UserManagement.vue'),
