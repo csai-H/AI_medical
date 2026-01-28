@@ -54,7 +54,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
@@ -88,6 +88,7 @@ const handleLogin = async () => {
     await userStore.login(loginForm.value)
     await userStore.getInfo()
     ElMessage.success('登录成功')
+    // 直接跳转，让路由守卫处理菜单加载
     router.push('/')
   } catch (error) {
     ElMessage.error(error.message || '登录失败')
