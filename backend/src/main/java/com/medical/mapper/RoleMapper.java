@@ -39,4 +39,13 @@ public interface RoleMapper extends BaseMapper<Role> {
             "INNER JOIN sys_user_role ur ON r.id = ur.role_id " +
             "WHERE ur.user_id = #{userId} AND r.status = 1 AND r.deleted = 0")
     List<Role> getRolesByUserId(@Param("userId") Long userId);
+
+    /**
+     * 根据角色编码获取角色
+     *
+     * @param roleCode 角色编码
+     * @return 角色对象
+     */
+    @Select("SELECT * FROM sys_role WHERE role_code = #{roleCode} AND deleted = 0")
+    Role getRoleByRoleCode(@Param("roleCode") String roleCode);
 }
