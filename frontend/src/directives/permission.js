@@ -8,7 +8,7 @@ export const permission = {
   mounted(el, binding) {
     const { value } = binding
     const userStore = useUserStore()
-    const permissions = userStore.userInfo?.permissions || []
+    const permissions = userStore.permissions || []
 
     if (value && value instanceof Array && value.length > 0) {
       const hasPermission = value.some(permission => permissions.includes(permission))
