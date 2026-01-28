@@ -24,7 +24,7 @@
 
       <!-- 操作按钮 -->
       <div class="toolbar">
-        <el-button type="primary" @click="handleAdd">
+        <el-button v-permission="'user:add'" type="primary" @click="handleAdd">
           <el-icon><Plus /></el-icon>
           新增用户
         </el-button>
@@ -56,13 +56,13 @@
         <el-table-column prop="createTime" label="创建时间" width="180" />
         <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="handleEdit(row)">
+            <el-button v-permission="'user:edit'" type="primary" link size="small" @click="handleEdit(row)">
               编辑
             </el-button>
-            <el-button type="warning" link size="small" @click="handleResetPassword(row)">
+            <el-button v-permission="'user:reset-password'" type="warning" link size="small" @click="handleResetPassword(row)">
               重置密码
             </el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(row)">
+            <el-button v-permission="'user:delete'" type="danger" link size="small" @click="handleDelete(row)">
               删除
             </el-button>
           </template>

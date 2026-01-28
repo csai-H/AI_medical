@@ -1,5 +1,6 @@
 package com.medical.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.medical.common.Result;
@@ -29,6 +30,7 @@ public class DiagnosisController {
      * AI智能诊断
      */
     @PostMapping("/ai")
+    @SaCheckPermission("diagnosis:ai")
     public Result<Map<String, Object>> aiDiagnosis(@RequestBody AiDiagnosisDTO dto) {
         try {
             Map<String, Object> result = sparkAiService.aiDiagnosis(dto);
@@ -64,6 +66,7 @@ public class DiagnosisController {
      * 分页查询诊断记录
      */
     @GetMapping("/page")
+    @SaCheckPermission("diagnosis:record")
     public Result<Page<DiagnosisRecord>> page(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,
@@ -91,6 +94,7 @@ public class DiagnosisController {
      * 根据ID查询诊断记录
      */
     @GetMapping("/{id}")
+    @SaCheckPermission("diagnosis:detail")
     public Result<DiagnosisRecord> getById(@PathVariable Long id) {
         DiagnosisRecord record = diagnosisRecordService.getById(id);
         if (record == null) {

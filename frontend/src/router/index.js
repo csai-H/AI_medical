@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
-const routes = [
+// 静态路由(不需要权限)
+const staticRoutes = [
   {
     path: '/login',
     name: 'Login',
@@ -14,6 +15,16 @@ const routes = [
     component: () => import('@/views/Register.vue'),
     meta: { title: '注册' }
   },
+  {
+    path: '/404',
+    name: 'NotFound',
+    component: () => import('@/views/404.vue'),
+    meta: { title: '页面不存在' }
+  }
+]
+
+// 动态路由(需要权限)
+const dynamicRoutes = [
   {
     path: '/',
     component: () => import('@/layout/Index.vue'),
@@ -29,7 +40,7 @@ const routes = [
         path: 'patient',
         name: 'Patient',
         component: () => import('@/views/Patient.vue'),
-        meta: { title: '患者管理', icon: 'User' }
+        meta: { title: '患者管理', icon: 'UserFilled' }
       },
       {
         path: 'diagnosis',
@@ -44,34 +55,22 @@ const routes = [
         meta: { title: '诊断记录', icon: 'Document' }
       },
       {
-        path: 'knowledge',
-        name: 'Knowledge',
-        component: () => import('@/views/Knowledge.vue'),
-        meta: { title: '知识库管理', icon: 'Books' }
-      },
-      {
-        path: 'statistics',
-        name: 'Statistics',
-        component: () => import('@/views/Statistics.vue'),
-        meta: { title: '数据统计', icon: 'DataAnalysis' }
-      },
-      {
-        path: 'settings',
-        name: 'Settings',
-        component: () => import('@/views/Settings.vue'),
-        meta: { title: '系统设置', icon: 'Setting' }
-      },
-      {
         path: 'user-management',
         name: 'UserManagement',
         component: () => import('@/views/UserManagement.vue'),
-        meta: { title: '用户管理', icon: 'UserFilled', permission: 'user:list' }
+        meta: { title: '用户管理', icon: 'User' }
+      },
+      {
+        path: 'role-management',
+        name: 'RoleManagement',
+        component: () => import('@/views/RoleManagement.vue'),
+        meta: { title: '角色管理', icon: 'Lock' }
       },
       {
         path: 'change-password',
         name: 'ChangePassword',
         component: () => import('@/views/ChangePassword.vue'),
-        meta: { title: '修改密码', icon: 'Lock', hidden: true }
+        meta: { title: '修改密码', hidden: true }
       }
     ]
   }
@@ -79,11 +78,77 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes: staticRoutes
 })
 
+/**
+ * 根据菜单添加动态路由
+ * @param {Array} menus 菜单列表
+ */
+export function addDynamicRoutes(menus) {
+  // 查找动态路由中的根路由（即 / 路由）
+  const rootRoute = dynamicRoutes.find(r => r.path === '/')
+
+  if (!rootRoute) {
+    console.error('未找到根路由')
+    return
+  }
+
+  // 收集所有需要添加的子路由
+  const childrenToAdd = []
+
+  menus.forEach(menu => {
+    // 在根路由的子路由中查找匹配的路由
+    const matchedChild = rootRoute.children?.find(child => {
+      // 去掉开头的斜杠进行匹配（菜单数据可能是 /dashboard，路由子路径是 dashboard）
+      const menuPath = menu.path.startsWith('/') ? menu.path.slice(1) : menu.path
+      return child.path === menuPath
+    })
+
+    if (matchedChild) {
+      childrenToAdd.push(matchedChild)
+
+      // 递归处理子菜单
+      if (menu.children && menu.children.length > 0) {
+        // 这里可以扩展支持多层嵌套
+      }
+    }
+  })
+
+  // 克隆根路由并只添加匹配的子路由
+  const routeToAdd = {
+    ...rootRoute,
+    children: childrenToAdd
+  }
+
+  router.addRoute(routeToAdd)
+}
+
+/**
+ * 根据路径查找路由
+ * @param {Array} routes 路由列表
+ * @param {String} path 路径
+ * @returns {Object|null}
+ */
+function findRouteByPath(routes, path) {
+  for (const route of routes) {
+    if (route.path === path || route.path === '/' + path) {
+      return route
+    }
+
+    if (route.children) {
+      const found = findRouteByPath(route.children, path)
+      if (found) {
+        return found
+      }
+    }
+  }
+
+  return null
+}
+
 // 路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
 
   // 未登录跳转登录页
@@ -93,19 +158,29 @@ router.beforeEach((to, from, next) => {
   }
 
   // 已登录访问登录页，跳转到首页
-  if (to.path === '/login' && userStore.token) {
+  if ((to.path === '/login' || to.path === '/register') && userStore.token) {
     next('/')
     return
   }
 
-  // 权限验证
-  if (to.meta.permission) {
-    const permissions = userStore.userInfo?.permissions || []
-    if (!permissions.includes(to.meta.permission)) {
-      // 显示403错误或跳转到无权限页面
-      next('/dashboard')
+  // 已登录且菜单未加载,加载菜单
+  if (userStore.token && !userStore.menusLoaded) {
+    try {
+      await userStore.fetchMenus()
+      // 动态路由添加后,需要重新进入一次
+      next({ ...to, replace: true })
+      return
+    } catch (error) {
+      console.error('加载菜单失败:', error)
+      next('/login')
       return
     }
+  }
+
+  // 路由不存在,跳转到404
+  if (to.matched.length === 0) {
+    next('/404')
+    return
   }
 
   next()

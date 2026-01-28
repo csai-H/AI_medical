@@ -1,5 +1,6 @@
 package com.medical.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.medical.common.Result;
@@ -25,6 +26,7 @@ public class PatientController {
      * 分页查询患者列表
      */
     @GetMapping("/page")
+    @SaCheckPermission("patient:list")
     public Result<Page<Patient>> page(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,
@@ -52,6 +54,7 @@ public class PatientController {
      * 根据ID查询患者
      */
     @GetMapping("/{id}")
+    @SaCheckPermission("patient:detail")
     public Result<Patient> getById(@PathVariable Long id) {
         Patient patient = patientService.getById(id);
         if (patient == null) {
@@ -64,6 +67,7 @@ public class PatientController {
      * 新增患者
      */
     @PostMapping
+    @SaCheckPermission("patient:create")
     public Result<Void> add(@RequestBody Patient patient) {
         try {
             patientService.save(patient);
@@ -77,6 +81,7 @@ public class PatientController {
      * 更新患者信息
      */
     @PutMapping
+    @SaCheckPermission("patient:update")
     public Result<Void> update(@RequestBody Patient patient) {
         try {
             patientService.updateById(patient);
@@ -90,6 +95,7 @@ public class PatientController {
      * 删除患者
      */
     @DeleteMapping("/{id}")
+    @SaCheckPermission("patient:delete-api")
     public Result<Void> delete(@PathVariable Long id) {
         try {
             patientService.removeById(id);

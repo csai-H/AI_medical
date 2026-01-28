@@ -51,4 +51,13 @@ public interface PermissionMapper extends BaseMapper<Permission> {
             "</foreach>" +
             "</script>")
     void insertRolePermissions(@Param("roleId") Integer roleId, @Param("permissionIds") List<Long> permissionIds);
+
+    /**
+     * 根据角色ID获取权限ID列表
+     *
+     * @param roleId 角色ID
+     * @return 权限ID列表
+     */
+    @Select("SELECT permission_id FROM sys_role_permission WHERE role_id = #{roleId}")
+    List<Long> getPermissionIdsByRoleId(@Param("roleId") Integer roleId);
 }

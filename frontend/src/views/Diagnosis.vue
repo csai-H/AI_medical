@@ -122,7 +122,7 @@
             </el-form-item>
 
             <el-form-item>
-              <el-button type="primary" :loading="diagnosing" @click="handleAiDiagnosis">
+              <el-button v-permission="'diagnosis:ai'" type="primary" :loading="diagnosing" @click="handleAiDiagnosis">
                 <el-icon><MagicStick /></el-icon>
                 AI智能诊断
               </el-button>

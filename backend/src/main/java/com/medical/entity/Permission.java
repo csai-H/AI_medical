@@ -60,6 +60,26 @@ public class Permission {
     private Integer status;
 
     /**
+     * 菜单类型: directory/menu/button
+     */
+    private String menuType;
+
+    /**
+     * 是否可见: 0-隐藏, 1-显示
+     */
+    private Integer visible;
+
+    /**
+     * 菜单图标
+     */
+    private String icon;
+
+    /**
+     * 前端组件路径
+     */
+    private String component;
+
+    /**
      * 权限描述
      */
     private String description;

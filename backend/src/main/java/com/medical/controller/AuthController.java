@@ -5,10 +5,14 @@ import com.medical.common.Result;
 import com.medical.dto.LoginDTO;
 import com.medical.dto.RegisterDTO;
 import com.medical.entity.User;
+import com.medical.service.PermissionService;
 import com.medical.service.UserService;
 import com.medical.util.PasswordValidator;
+import com.medical.vo.MenuVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 认证控制器
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
+    private final PermissionService permissionService;
 
     /**
      * 用户登录
@@ -85,6 +90,16 @@ public class AuthController {
         // 清除敏感信息
         user.setPassword(null);
         return Result.success(user);
+    }
+
+    /**
+     * 获取当前用户的菜单
+     */
+    @GetMapping("/user/menu")
+    public Result<List<MenuVO>> getUserMenu() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        List<MenuVO> menus = permissionService.getUserMenuTree(userId);
+        return Result.success(menus);
     }
 
 }

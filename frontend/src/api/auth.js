@@ -41,3 +41,13 @@ export const register = (data) => {
     data
   })
 }
+
+/**
+ * 获取用户菜单
+ */
+export const getMenu = () => {
+  return request({
+    url: '/auth/user/menu',
+    method: 'get'
+  })
+}

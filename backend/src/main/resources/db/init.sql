@@ -1,14 +1,14 @@
 -- ================================================
 -- AI Medical Platform - Complete Database Initialization Script
--- Version: 2.0.0 (Security Enhanced)
+-- Version: 2.1.0 (Complete RBAC System)
 -- Last Updated: 2025-01-28
 -- ================================================
 --
 -- This script includes:
 -- 1. Database creation
 -- 2. All table structures (User, Patient, Diagnosis, Knowledge, RBAC)
--- 3. Initial data with BCrypt encrypted passwords
--- 4. Complete RBAC permission system
+-- 3. Complete RBAC v2 system (Role-based access control)
+-- 4. Initial data with BCrypt encrypted passwords
 -- 5. Test accounts with strong passwords
 --
 -- Usage: mysql -u root -p < init.sql
@@ -150,12 +150,46 @@ CREATE TABLE sys_permission (
     sort_order INT DEFAULT 0 COMMENT '排序',
     status INT DEFAULT 1 COMMENT '状态: 0-禁用, 1-启用',
     description VARCHAR(500) COMMENT '权限描述',
+    deleted INT DEFAULT 0 COMMENT '逻辑删除',
+    menu_type VARCHAR(20) COMMENT '菜单类型: directory/menu/button',
+    visible INT DEFAULT 1 COMMENT '是否可见: 0-隐藏, 1-显示',
+    icon VARCHAR(100) COMMENT '菜单图标',
+    component VARCHAR(200) COMMENT '前端组件路径',
+    path VARCHAR(200) COMMENT '路由路径',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     INDEX idx_permission_code (permission_code),
     INDEX idx_resource_type (resource_type),
     INDEX idx_parent_id (parent_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限表';
+
+-- Role Table
+DROP TABLE IF EXISTS sys_role;
+CREATE TABLE sys_role (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '角色ID',
+    role_code VARCHAR(50) NOT NULL UNIQUE COMMENT '角色编码',
+    role_name VARCHAR(100) NOT NULL COMMENT '角色名称',
+    role_level INT DEFAULT 0 COMMENT '角色层级: 0-超级管理员, 1-管理员, 2-普通用户',
+    status INT DEFAULT 1 COMMENT '状态: 0-禁用, 1-启用',
+    description VARCHAR(500) COMMENT '角色描述',
+    deleted INT DEFAULT 0 COMMENT '逻辑删除',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_role_code (role_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色表';
+
+-- User Role Relation Table
+DROP TABLE IF EXISTS sys_user_role;
+CREATE TABLE sys_user_role (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    role_id BIGINT NOT NULL COMMENT '角色ID',
+    is_primary INT DEFAULT 0 COMMENT '是否主角色: 0-否, 1-是',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    UNIQUE KEY uk_user_role (user_id, role_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_role_id (role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户角色关联表';
 
 -- Role Permission Relation Table
 DROP TABLE IF EXISTS sys_role_permission;
@@ -195,7 +229,7 @@ CREATE TABLE sys_audit_log (
 -- ================================================
 
 -- Insert Users with BCrypt encrypted passwords
--- Passwords: Admin@2024, Doctor@2024, User@2024
+-- Passwords: admin2026, doctor2026
 INSERT INTO sys_user (username, password, real_name, role, status, title, specialty) VALUES
 ('admin', '$2a$10$H9zPs/FPjF/CbmNdvPPxZOEjf5bBH7TIlc0/AuiXdjkKjbs0uzTS6', 'System Administrator', 0, 1, 'System Admin', 'System Management'),
 ('doctor', '$2a$10$efO8RdeQv4ZDxiZoad15S.hip3C2cPFl1nEvdJiL7WifU1z5NIyGu', 'Dr. Zhang', 1, 1, 'Attending Physician', 'Internal Medicine, Respiratory Medicine');
@@ -215,58 +249,99 @@ INSERT INTO medical_knowledge (title, disease_name, category, symptoms, etiology
 -- RBAC PERMISSION DATA
 -- ================================================
 
--- User Management Permissions
-INSERT INTO sys_permission (permission_code, permission_name, resource_type, url, method, parent_id, sort_order, description) VALUES
-('user:list', '用户列表', 'api', '/user/list', 'GET', 0, 1, '查看用户列表'),
-('user:create', '创建用户', 'api', '/user/create', 'POST', 0, 2, '创建新用户'),
-('user:update', '更新用户', 'api', '/user/update', 'PUT', 0, 3, '更新用户信息'),
-('user:delete', '删除用户', 'api', '/user/delete', 'DELETE', 0, 4, '删除用户'),
-('user:reset-password', '重置密码', 'api', '/user/reset-password', 'POST', 0, 5, '重置用户密码'),
-('user:change-password', '修改密码', 'api', '/user/change-password', 'POST', 0, 6, '修改自己的密码'),
-('user:status', '用户状态', 'api', '/user/status', 'PUT', 0, 7, '启用/禁用用户');
+-- Menu Permissions
+INSERT INTO sys_permission (permission_code, permission_name, resource_type, menu_type, url, method, parent_id, sort_order, icon, path, component, visible, status, description) VALUES
+('system:dashboard', '工作台', 'menu', 'menu', '/dashboard', NULL, 0, 0, 'Odometer', '/dashboard', 'views/Dashboard.vue', 1, 1, '工作台菜单'),
+('system:user-management', '用户管理', 'menu', 'menu', '/user-management', NULL, 0, 1, 'User', '/user-management', 'views/UserManagement.vue', 1, 1, '用户管理菜单'),
+('system:patient-management', '患者管理', 'menu', 'menu', '/patient', NULL, 0, 2, 'UserFilled', '/patient', 'views/Patient.vue', 1, 1, '患者管理菜单'),
+('system:diagnosis', 'AI问诊', 'menu', 'menu', '/diagnosis', NULL, 0, 3, 'ChatLineRound', '/diagnosis', 'views/Diagnosis.vue', 1, 1, 'AI问诊菜单'),
+('system:role-management', '角色管理', 'menu', 'menu', '/role-management', NULL, 0, 4, 'Lock', '/role-management', 'views/RoleManagement.vue', 1, 1, '角色管理菜单');
 
--- Patient Management Permissions
-INSERT INTO sys_permission (permission_code, permission_name, resource_type, url, method, parent_id, sort_order, description) VALUES
-('patient:list', '患者列表', 'api', '/patient/list', 'GET', 0, 11, '查看患者列表'),
-('patient:create', '创建患者', 'api', '/patient/create', 'POST', 0, 12, '创建新患者'),
-('patient:update', '更新患者', 'api', '/patient/update', 'PUT', 0, 13, '更新患者信息'),
-('patient:delete', '删除患者', 'api', '/patient/delete', 'DELETE', 0, 14, '删除患者'),
-('patient:detail', '患者详情', 'api', '/patient/detail', 'GET', 0, 15, '查看患者详情');
+-- Button Permissions
+INSERT INTO sys_permission (permission_code, permission_name, resource_type, menu_type, parent_id, sort_order, visible, status, description) VALUES
+('patient:button:add', '新增患者按钮', 'button', 'button', 0, 11, 1, 1, '新增患者按钮'),
+('patient:button:edit', '编辑患者按钮', 'button', 'button', 0, 12, 1, 1, '编辑患者按钮'),
+('patient:button:delete', '删除患者按钮', 'button', 'button', 0, 13, 1, 1, '删除患者按钮'),
+('user:button:add', '新增用户按钮', 'button', 'button', 0, 14, 1, 1, '新增用户按钮'),
+('user:button:edit', '编辑用户按钮', 'button', 'button', 0, 15, 1, 1, '编辑用户按钮'),
+('user:button:delete', '删除用户按钮', 'button', 'button', 0, 16, 1, 1, '删除用户按钮');
 
--- Diagnosis Permissions
-INSERT INTO sys_permission (permission_code, permission_name, resource_type, url, method, parent_id, sort_order, description) VALUES
-('diagnosis:ai', 'AI问诊', 'api', '/diagnosis/ai', 'POST', 0, 21, 'AI智能问诊'),
-('diagnosis:record', '诊断记录', 'api', '/diagnosis/record', 'GET', 0, 22, '查看诊断记录'),
-('diagnosis:detail', '诊断详情', 'api', '/diagnosis/detail', 'GET', 0, 23, '查看诊断详情');
+-- API Permissions
+INSERT INTO sys_permission (permission_code, permission_name, resource_type, url, method, parent_id, sort_order, visible, status, description) VALUES
+-- User Management APIs
+('user:list', '用户列表', 'api', '/user/list', 'GET', 0, 21, 1, 1, '查看用户列表'),
+('user:create', '创建用户', 'api', '/user/create', 'POST', 0, 22, 1, 1, '创建新用户'),
+('user:update', '更新用户', 'api', '/user/update', 'PUT', 0, 23, 1, 1, '更新用户信息'),
+('user:delete', '删除用户', 'api', '/user/delete', 'DELETE', 0, 24, 1, 1, '删除用户'),
+('user:reset-password', '重置密码', 'api', '/user/reset-password', 'POST', 0, 25, 1, 1, '重置用户密码'),
+('user:change-password', '修改密码', 'api', '/user/change-password', 'POST', 0, 26, 1, 1, '修改自己的密码'),
+('user:status', '用户状态', 'api', '/user/status', 'PUT', 0, 27, 1, 1, '启用/禁用用户'),
 
--- System Management Permissions
-INSERT INTO sys_permission (permission_code, permission_name, resource_type, url, method, parent_id, sort_order, description) VALUES
-('system:config', '系统配置', 'api', '/system/config', 'GET', 0, 31, '查看系统配置'),
-('system:log', '系统日志', 'api', '/system/log', 'GET', 0, 32, '查看系统日志'),
-('system:user', '用户管理', 'menu', '/user-management', NULL, 0, 33, '用户管理菜单');
+-- Patient Management APIs
+('patient:list', '患者列表', 'api', '/patient/page', 'GET', 0, 31, 1, 1, '查看患者列表'),
+('patient:detail', '患者详情', 'api', '/patient/*', 'GET', 0, 32, 1, 1, '查看患者详情'),
+('patient:create', '创建患者', 'api', '/patient', 'POST', 0, 33, 1, 1, '创建新患者'),
+('patient:update', '更新患者', 'api', '/patient', 'PUT', 0, 34, 1, 1, '更新患者信息'),
+('patient:delete-api', '删除患者', 'api', '/patient/*', 'DELETE', 0, 35, 1, 1, '删除患者'),
+
+-- Diagnosis APIs
+('diagnosis:ai', 'AI问诊', 'api', '/diagnosis/ai', 'POST', 0, 41, 1, 1, 'AI智能问诊'),
+('diagnosis:record', '诊断记录', 'api', '/diagnosis/page', 'GET', 0, 42, 1, 1, '查看诊断记录'),
+('diagnosis:detail', '诊断详情', 'api', '/diagnosis/*', 'GET', 0, 43, 1, 1, '查看诊断详情'),
+
+-- System Management APIs
+('system:config', '系统配置', 'api', '/system/config', 'GET', 0, 51, 1, 1, '查看系统配置'),
+('system:log', '系统日志', 'api', '/system/log', 'GET', 0, 52, 1, 1, '查看系统日志');
+
+-- ================================================
+-- RBAC ROLE DATA
+-- ================================================
+
+-- Insert Default Roles
+INSERT INTO sys_role (role_code, role_name, role_level, status, description) VALUES
+('ROLE_ADMIN', '系统管理员', 0, 1, '拥有系统所有权限'),
+('ROLE_DOCTOR', '医生', 1, 1, '可以管理患者和进行AI问诊'),
+('ROLE_USER', '普通用户', 2, 1, '可以使用AI问诊功能');
+
+-- Assign Roles to Users
+INSERT INTO sys_user_role (user_id, role_id, is_primary)
+SELECT
+    u.id as user_id,
+    r.id as role_id,
+    1 as is_primary
+FROM sys_user u
+INNER JOIN sys_role r ON (
+    (u.role = 0 AND r.role_code = 'ROLE_ADMIN') OR
+    (u.role = 1 AND r.role_code = 'ROLE_DOCTOR') OR
+    (u.role = 2 AND r.role_code = 'ROLE_USER')
+)
+WHERE u.deleted = 0;
 
 -- ================================================
 -- ROLE PERMISSION ASSIGNMENTS
 -- ================================================
 
--- Admin Role (role=0) - All Permissions
+-- Admin Role (id=1) - All Permissions
 INSERT INTO sys_role_permission (role_id, permission_id)
-SELECT 0, id FROM sys_permission;
+SELECT 1, id FROM sys_permission;
 
--- Doctor Role (role=1) - Patient and Diagnosis Permissions
+-- Doctor Role (id=2) - Patient and Diagnosis Permissions
 INSERT INTO sys_role_permission (role_id, permission_id)
-SELECT 1, id FROM sys_permission 
+SELECT 2, id FROM sys_permission
 WHERE permission_code IN (
-    'patient:list', 'patient:create', 'patient:update', 'patient:detail',
+    'patient:list', 'patient:detail', 'patient:create', 'patient:update',
+    'patient:button:add', 'patient:button:edit',
     'diagnosis:ai', 'diagnosis:record', 'diagnosis:detail',
+    'system:patient-management', 'system:diagnosis',
     'user:change-password'
 );
 
--- User Role (role=2) - Diagnosis and Password Change Only
+-- User Role (id=3) - Diagnosis and Password Change Only
 INSERT INTO sys_role_permission (role_id, permission_id)
-SELECT 2, id FROM sys_permission 
+SELECT 3, id FROM sys_permission
 WHERE permission_code IN (
     'diagnosis:ai', 'diagnosis:record', 'diagnosis:detail',
+    'system:diagnosis',
     'user:change-password'
 );
 

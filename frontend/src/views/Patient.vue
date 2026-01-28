@@ -17,7 +17,7 @@
 
       <!-- 操作按钮 -->
       <div class="toolbar">
-        <el-button type="primary" @click="handleAdd">
+        <el-button v-permission="'patient:add'" type="primary" @click="handleAdd">
           <el-icon><Plus /></el-icon>
           新增患者
         </el-button>
@@ -41,10 +41,10 @@
             <el-button type="primary" link size="small" @click="handleView(row)">
               查看
             </el-button>
-            <el-button type="primary" link size="small" @click="handleEdit(row)">
+            <el-button v-permission="'patient:edit'" type="primary" link size="small" @click="handleEdit(row)">
               编辑
             </el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(row)">
+            <el-button v-permission="'patient:delete'" type="danger" link size="small" @click="handleDelete(row)">
               删除
             </el-button>
           </template>

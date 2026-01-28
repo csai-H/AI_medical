@@ -1,13 +1,12 @@
 package com.medical.service.impl;
 
 import cn.dev33.satoken.stp.StpInterface;
+import com.medical.mapper.RoleMapper;
 import com.medical.service.PermissionService;
-import com.medical.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,7 +21,7 @@ import java.util.List;
 public class StpInterfaceImpl implements StpInterface {
 
     private final PermissionService permissionService;
-    private final UserService userService;
+    private final RoleMapper roleMapper;
 
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
@@ -33,7 +32,7 @@ public class StpInterfaceImpl implements StpInterface {
             return permissions;
         } catch (Exception e) {
             log.error("获取用户权限失败: userId={}", loginId, e);
-            return new ArrayList<>();
+            return List.of();
         }
     }
 
@@ -41,18 +40,12 @@ public class StpInterfaceImpl implements StpInterface {
     public List<String> getRoleList(Object loginId, String loginType) {
         try {
             Long userId = Long.parseLong(loginId.toString());
-            Integer role = userService.getById(userId).getRole();
-            String roleName = "ROLE_" + switch (role) {
-                case 0 -> "ADMIN";
-                case 1 -> "DOCTOR";
-                case 2 -> "USER";
-                default -> "UNKNOWN";
-            };
-            log.debug("用户ID: {} 的角色: {}", userId, roleName);
-            return List.of(roleName);
+            List<String> roles = roleMapper.getRoleCodesByUserId(userId);
+            log.debug("用户ID: {} 的角色列表: {}", userId, roles);
+            return roles;
         } catch (Exception e) {
             log.error("获取用户角色失败: userId={}", loginId, e);
-            return new ArrayList<>();
+            return List.of();
         }
     }
 }
