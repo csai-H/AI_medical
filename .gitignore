@@ -6,6 +6,10 @@
 *.swo
 *~
 
+# Tools
+.serena/
+.claude/
+
 # Maven
 backend/target/
 backend/.mvn/
