@@ -23,7 +23,8 @@
                 <el-icon v-else :size="30" color="#409EFF"><Robot /></el-icon>
               </div>
               <div class="message-text">
-                <div class="message-content">{{ msg.content }}</div>
+                <div class="message-content" v-if="msg.role === 'user'">{{ msg.content }}</div>
+                <div class="message-content markdown-content" v-else v-html="renderMarkdown(msg.content)"></div>
                 <div class="message-time">{{ msg.time }}</div>
               </div>
             </div>
@@ -186,6 +187,36 @@ import { aiChat, aiDiagnosis } from '@/api/diagnosis'
 import { getPatientPage } from '@/api/patient'
 import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
+import { marked } from 'marked'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
+
+// 配置marked以支持代码高亮
+marked.setOptions({
+  highlight: function(code, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(code, { language: lang }).value
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    return hljs.highlightAuto(code).value
+  },
+  breaks: true,  // 支持换行
+  gfm: true      // GitHub风格markdown
+})
+
+// Markdown渲染函数
+const renderMarkdown = (content) => {
+  if (!content) return ''
+  try {
+    return marked.parse(content)
+  } catch (error) {
+    console.error('Markdown解析失败:', error)
+    return content
+  }
+}
 
 const userStore = useUserStore()
 
@@ -411,5 +442,121 @@ onMounted(() => {
 .result-actions {
   margin-top: 20px;
   text-align: center;
+}
+
+/* Markdown样式 */
+.markdown-content {
+  line-height: 1.6;
+}
+
+.markdown-content :deep(h1),
+.markdown-content :deep(h2),
+.markdown-content :deep(h3),
+.markdown-content :deep(h4),
+.markdown-content :deep(h5),
+.markdown-content :deep(h6) {
+  margin: 16px 0 8px 0;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.markdown-content :deep(h1) { font-size: 1.5em; }
+.markdown-content :deep(h2) { font-size: 1.3em; }
+.markdown-content :deep(h3) { font-size: 1.1em; }
+
+.markdown-content :deep(p) {
+  margin: 8px 0;
+}
+
+.markdown-content :deep(ul),
+.markdown-content :deep(ol) {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.markdown-content :deep(li) {
+  margin: 4px 0;
+}
+
+.markdown-content :deep(code) {
+  background-color: #f5f7fa;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #e83e8c;
+}
+
+.markdown-content :deep(pre) {
+  background-color: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  padding: 12px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.markdown-content :deep(pre code) {
+  background-color: transparent;
+  padding: 0;
+  color: #24292e;
+  font-size: 0.9em;
+}
+
+.markdown-content :deep(blockquote) {
+  border-left: 4px solid #409EFF;
+  padding-left: 12px;
+  margin: 10px 0;
+  color: #666;
+  background-color: #f5f7fa;
+  padding: 8px 12px;
+  border-radius: 0 4px 4px 0;
+}
+
+.markdown-content :deep(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.markdown-content :deep(table th),
+.markdown-content :deep(table td) {
+  border: 1px solid #e1e4e8;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.markdown-content :deep(table th) {
+  background-color: #f6f8fa;
+  font-weight: bold;
+}
+
+.markdown-content :deep(a) {
+  color: #409EFF;
+  text-decoration: none;
+}
+
+.markdown-content :deep(a:hover) {
+  text-decoration: underline;
+}
+
+.markdown-content :deep(img) {
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-content :deep(hr) {
+  border: none;
+  border-top: 2px solid #e1e4e8;
+  margin: 20px 0;
+}
+
+.markdown-content :deep(strong) {
+  font-weight: bold;
+  color: #000;
+}
+
+.markdown-content :deep(em) {
+  font-style: italic;
 }
 </style>
