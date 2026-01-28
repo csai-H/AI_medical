@@ -232,10 +232,11 @@ CREATE TABLE sys_audit_log (
 -- ================================================
 
 -- Insert Users with BCrypt encrypted passwords
--- Passwords: admin2026, doctor2026
+-- Passwords: admin/Admin@2024, doctor/Doctor@2024, user/User@2024
 INSERT INTO sys_user (username, password, real_name, role, status, title, specialty) VALUES
 ('admin', '$2a$10$H9zPs/FPjF/CbmNdvPPxZOEjf5bBH7TIlc0/AuiXdjkKjbs0uzTS6', 'System Administrator', 0, 1, 'System Admin', 'System Management'),
-('doctor', '$2a$10$efO8RdeQv4ZDxiZoad15S.hip3C2cPFl1nEvdJiL7WifU1z5NIyGu', 'Dr. Zhang', 1, 1, 'Attending Physician', 'Internal Medicine, Respiratory Medicine');
+('doctor', '$2a$10$efO8RdeQv4ZDxiZoad15S.hip3C2cPFl1nEvdJiL7WifU1z5NIyGu', 'Dr. Zhang', 1, 1, 'Attending Physician', 'Internal Medicine, Respiratory Medicine'),
+('user', '$2a$10$rPEY0qSJvPYQHlzXhEJBxOvPLkAOFd1xNJ3nx9h1JvKROh/xZh10e', 'Test User', 2, 1, 'Regular User', NULL);
 
 -- Insert Test Patients
 INSERT INTO patient (patient_no, name, gender, age, birthday, phone, address) VALUES
