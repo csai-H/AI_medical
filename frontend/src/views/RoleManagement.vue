@@ -37,6 +37,7 @@
               v-model="row.status"
               :active-value="1"
               :inactive-value="0"
+              :disabled="row.roleCode === 'ROLE_ADMIN'"
               @change="handleStatusChange(row)"
             />
           </template>
@@ -45,13 +46,33 @@
         <el-table-column prop="createTime" label="创建时间" width="180" />
         <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="handleAssignPermissions(row)">
+            <el-button
+              type="primary"
+              link
+              size="small"
+              :disabled="row.roleCode === 'ROLE_ADMIN'"
+              @click="handleAssignPermissions(row)"
+            >
               分配权限
             </el-button>
-            <el-button v-permission="'role:update'" type="primary" link size="small" @click="handleEdit(row)">
+            <el-button
+              v-permission="'role:update'"
+              type="primary"
+              link
+              size="small"
+              :disabled="row.roleCode === 'ROLE_ADMIN'"
+              @click="handleEdit(row)"
+            >
               编辑
             </el-button>
-            <el-button v-permission="'role:delete'" type="danger" link size="small" @click="handleDelete(row)">
+            <el-button
+              v-permission="'role:delete'"
+              type="danger"
+              link
+              size="small"
+              :disabled="row.roleCode === 'ROLE_ADMIN'"
+              @click="handleDelete(row)"
+            >
               删除
             </el-button>
           </template>
@@ -96,7 +117,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="formData.status">
+          <el-radio-group v-model="formData.status" :disabled="formData.roleCode === 'ROLE_ADMIN'">
             <el-radio :value="1">启用</el-radio>
             <el-radio :value="0">禁用</el-radio>
           </el-radio-group>
@@ -136,6 +157,7 @@
             node-key="id"
             :default-checked-keys="checkedPermissions"
             :default-expand-all="true"
+            :disabled="currentRole?.roleCode === 'ROLE_ADMIN'"
           />
         </el-form-item>
       </el-form>

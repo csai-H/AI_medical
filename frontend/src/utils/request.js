@@ -1,6 +1,10 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
+import { useUserStore } from '@/stores/user'
+
+// 防止重复弹出登录过期提示
+let isShowingLoginExpired = false
 
 const request = axios.create({
   baseURL: '/api',
@@ -37,9 +41,16 @@ request.interceptors.response.use(
     if (res.code === 200) {
       return res
     } else if (res.code === 401) {
-      ElMessage.error('登录已过期，请重新登录')
-      localStorage.removeItem('token')
-      router.push('/login')
+      if (!isShowingLoginExpired) {
+        isShowingLoginExpired = true
+        const userStore = useUserStore()
+        userStore.logout()
+        router.push('/login')
+        // 延迟重置标志，避免快速连续请求
+        setTimeout(() => {
+          isShowingLoginExpired = false
+        }, 1000)
+      }
       return Promise.reject(new Error(res.message || 'Error'))
     } else {
       ElMessage.error(res.message || '请求失败')
@@ -57,9 +68,16 @@ request.interceptors.response.use(
       } else if (status === 500) {
         ElMessage.error('服务器错误')
       } else if (status === 401) {
-        ElMessage.error('未授权，请重新登录')
-        localStorage.removeItem('token')
-        router.push('/login')
+        if (!isShowingLoginExpired) {
+          isShowingLoginExpired = true
+          const userStore = useUserStore()
+          userStore.logout()
+          router.push('/login')
+          // 延迟重置标志，避免快速连续请求
+          setTimeout(() => {
+            isShowingLoginExpired = false
+          }, 1000)
+        }
       } else {
         ElMessage.error(error.response.data?.message || '请求失败')
       }
