@@ -72,6 +72,7 @@ public class MedicalKnowledge {
     /**
      * 参考文献
      */
+    @TableField("`references`")
     private String references;
 
     /**
