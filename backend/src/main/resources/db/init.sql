@@ -349,24 +349,43 @@ SELECT 1, id FROM sys_permission;
 INSERT INTO sys_role_permission (role_id, permission_id)
 SELECT 2, id FROM sys_permission
 WHERE permission_code IN (
+    -- 菜单权限
     'system:dashboard',
-    'patient:list', 'patient:detail', 'patient:create', 'patient:update',
-    'patient:button:add', 'patient:button:edit',
-    'diagnosis:ai', 'diagnosis:record', 'diagnosis:detail',
-    'system:patient-management', 'system:diagnosis',
-    'user:change-password',
-    'system:settings'
+    'system:patient-management',
+    'system:diagnosis',
+    'system:settings',
+    -- 患者管理API权限
+    'patient:list',
+    'patient:detail',
+    'patient:create',
+    'patient:update',
+    'patient:delete-api',
+    -- 患者管理按钮权限
+    'patient:button:add',
+    'patient:button:edit',
+    'patient:button:delete',
+    -- AI问诊权限
+    'diagnosis:ai',
+    'diagnosis:record',
+    'diagnosis:detail',
+    -- 用户个人权限
+    'user:change-password'
 );
 
 -- User Role (id=3) - Diagnosis and Password Change Only
 INSERT INTO sys_role_permission (role_id, permission_id)
 SELECT 3, id FROM sys_permission
 WHERE permission_code IN (
+    -- 菜单权限
     'system:dashboard',
-    'diagnosis:ai', 'diagnosis:record', 'diagnosis:detail',
     'system:diagnosis',
-    'user:change-password',
-    'system:settings'
+    'system:settings',
+    -- AI问诊权限
+    'diagnosis:ai',
+    'diagnosis:record',
+    'diagnosis:detail',
+    -- 用户个人权限
+    'user:change-password'
 );
 
 SET FOREIGN_KEY_CHECKS = 1;
