@@ -251,7 +251,6 @@ INSERT INTO medical_knowledge (title, disease_name, category, symptoms, etiology
 
 -- Menu Permissions
 INSERT INTO sys_permission (permission_code, permission_name, resource_type, menu_type, url, method, parent_id, sort_order, icon, path, component, visible, status, description) VALUES
-('system:dashboard', '工作台', 'menu', 'menu', '/dashboard', NULL, 0, 0, 'Odometer', '/dashboard', 'views/Dashboard.vue', 1, 1, '工作台菜单'),
 ('system:user-management', '用户管理', 'menu', 'menu', '/user-management', NULL, 0, 1, 'User', '/user-management', 'views/UserManagement.vue', 1, 1, '用户管理菜单'),
 ('system:patient-management', '患者管理', 'menu', 'menu', '/patient', NULL, 0, 2, 'UserFilled', '/patient', 'views/Patient.vue', 1, 1, '患者管理菜单'),
 ('system:diagnosis', 'AI问诊', 'menu', 'menu', '/diagnosis', NULL, 0, 3, 'ChatLineRound', '/diagnosis', 'views/Diagnosis.vue', 1, 1, 'AI问诊菜单'),
@@ -264,7 +263,11 @@ INSERT INTO sys_permission (permission_code, permission_name, resource_type, men
 ('patient:button:delete', '删除患者按钮', 'button', 'button', 0, 13, 1, 1, '删除患者按钮'),
 ('user:button:add', '新增用户按钮', 'button', 'button', 0, 14, 1, 1, '新增用户按钮'),
 ('user:button:edit', '编辑用户按钮', 'button', 'button', 0, 15, 1, 1, '编辑用户按钮'),
-('user:button:delete', '删除用户按钮', 'button', 'button', 0, 16, 1, 1, '删除用户按钮');
+('user:button:delete', '删除用户按钮', 'button', 'button', 0, 16, 1, 1, '删除用户按钮'),
+('user:add', '新增用户', 'button', 'button', 0, 17, 1, 1, '新增用户权限'),
+('user:edit', '编辑用户', 'button', 'button', 0, 18, 1, 1, '编辑用户权限'),
+('user:delete', '删除用户', 'button', 'button', 0, 19, 1, 1, '删除用户权限'),
+('user:reset-password', '重置密码', 'button', 'button', 0, 20, 1, 1, '重置密码权限');
 
 -- API Permissions
 INSERT INTO sys_permission (permission_code, permission_name, resource_type, url, method, parent_id, sort_order, visible, status, description) VALUES
@@ -272,8 +275,8 @@ INSERT INTO sys_permission (permission_code, permission_name, resource_type, url
 ('user:list', '用户列表', 'api', '/user/list', 'GET', 0, 21, 1, 1, '查看用户列表'),
 ('user:create', '创建用户', 'api', '/user/create', 'POST', 0, 22, 1, 1, '创建新用户'),
 ('user:update', '更新用户', 'api', '/user/update', 'PUT', 0, 23, 1, 1, '更新用户信息'),
-('user:delete', '删除用户', 'api', '/user/delete', 'DELETE', 0, 24, 1, 1, '删除用户'),
-('user:reset-password', '重置密码', 'api', '/user/reset-password', 'POST', 0, 25, 1, 1, '重置用户密码'),
+('user:delete-api', '删除用户', 'api', '/user/delete', 'DELETE', 0, 24, 1, 1, '删除用户'),
+('user:reset-password-api', '重置密码', 'api', '/user/reset-password', 'POST', 0, 25, 1, 1, '重置用户密码'),
 ('user:change-password', '修改密码', 'api', '/user/change-password', 'POST', 0, 26, 1, 1, '修改自己的密码'),
 ('user:status', '用户状态', 'api', '/user/status', 'PUT', 0, 27, 1, 1, '启用/禁用用户'),
 
@@ -291,7 +294,19 @@ INSERT INTO sys_permission (permission_code, permission_name, resource_type, url
 
 -- System Management APIs
 ('system:config', '系统配置', 'api', '/system/config', 'GET', 0, 51, 1, 1, '查看系统配置'),
-('system:log', '系统日志', 'api', '/system/log', 'GET', 0, 52, 1, 1, '查看系统日志');
+('system:log', '系统日志', 'api', '/system/log', 'GET', 0, 52, 1, 1, '查看系统日志'),
+
+-- Role Management APIs
+('role:list', '角色列表', 'api', '/role/page', 'GET', 0, 53, 1, 1, '查看角色列表'),
+('role:create', '创建角色', 'api', '/role/create', 'POST', 0, 54, 1, 1, '创建新角色'),
+('role:update', '更新角色', 'api', '/role/update', 'PUT', 0, 55, 1, 1, '更新角色信息'),
+('role:delete', '删除角色', 'api', '/role/delete/*', 'DELETE', 0, 56, 1, 1, '删除角色'),
+('role:detail', '角色详情', 'api', '/role/permissions/*', 'GET', 0, 57, 1, 1, '查看角色详情'),
+('role:assign-permissions', '分配权限', 'api', '/role/assign-permissions', 'POST', 0, 58, 1, 1, '为角色分配权限'),
+
+-- Permission Management APIs
+('permission:list', '权限列表', 'api', '/permission/list', 'GET', 0, 59, 1, 1, '查看所有权限'),
+('permission:tree', '权限树', 'api', '/permission/tree', 'GET', 0, 60, 1, 1, '获取权限树形结构');
 
 -- ================================================
 -- RBAC ROLE DATA

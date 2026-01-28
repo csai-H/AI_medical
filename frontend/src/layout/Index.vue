@@ -86,7 +86,7 @@ const menuRoutes = computed(() => {
       path: `/${r.path}` // 确保路径是绝对路径
     }))
     .sort((a, b) => {
-      const order = ['dashboard', 'diagnosis', 'patient', 'diagnosis-record', 'knowledge', 'statistics', 'settings', 'user-management']
+      const order = ['dashboard', 'patient', 'diagnosis', 'diagnosis-record', 'knowledge', 'statistics', 'settings', 'user-management', 'role-management']
       const pathA = a.path.replace('/', '')
       const pathB = b.path.replace('/', '')
       return order.indexOf(pathA) - order.indexOf(pathB)

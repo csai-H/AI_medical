@@ -97,7 +97,7 @@ public class UserController {
      * 删除用户
      */
     @DeleteMapping("/delete/{id}")
-    @RequiredPermission("user:delete")
+    @RequiredPermission("user:delete-api")
     public Result<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return Result.success("删除用户成功", null);
@@ -107,7 +107,7 @@ public class UserController {
      * 重置用户密码
      */
     @PostMapping("/reset-password")
-    @RequiredPermission("user:reset-password")
+    @RequiredPermission("user:reset-password-api")
     public Result<Void> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
         // 验证两次密码是否一致
         if (!PasswordValidator.isPasswordMatch(
