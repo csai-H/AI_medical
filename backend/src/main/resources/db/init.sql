@@ -256,10 +256,12 @@ INSERT INTO medical_knowledge (title, disease_name, category, symptoms, etiology
 -- Menu Permissions
 INSERT INTO sys_permission (permission_code, permission_name, resource_type, menu_type, url, method, parent_id, sort_order, icon, path, component, visible, status, description) VALUES
 ('system:dashboard', '工作台', 'menu', 'menu', '/dashboard', NULL, 0, 0, 'Odometer', '/dashboard', 'views/Dashboard.vue', 1, 1, '工作台菜单'),
-('system:user-management', '用户管理', 'menu', 'menu', '/user-management', NULL, 0, 1, 'User', '/user-management', 'views/UserManagement.vue', 1, 1, '用户管理菜单'),
-('system:patient-management', '患者管理', 'menu', 'menu', '/patient', NULL, 0, 2, 'UserFilled', '/patient', 'views/Patient.vue', 1, 1, '患者管理菜单'),
-('system:diagnosis', 'AI问诊', 'menu', 'menu', '/diagnosis', NULL, 0, 3, 'ChatLineRound', '/diagnosis', 'views/Diagnosis.vue', 1, 1, 'AI问诊菜单'),
-('system:role-management', '角色管理', 'menu', 'menu', '/role-management', NULL, 0, 4, 'Lock', '/role-management', 'views/RoleManagement.vue', 1, 1, '角色管理菜单'),
+('system:patient-management', '患者管理', 'menu', 'menu', '/patient', NULL, 0, 1, 'UserFilled', '/patient', 'views/Patient.vue', 1, 1, '患者管理菜单'),
+('system:diagnosis', 'AI问诊', 'menu', 'menu', '/diagnosis', NULL, 0, 2, 'ChatLineRound', '/diagnosis', 'views/Diagnosis.vue', 1, 1, 'AI问诊菜单'),
+('system:diagnosis-record', '诊断记录', 'menu', 'menu', '/diagnosis-record', NULL, 0, 3, 'Document', '/diagnosis-record', 'views/DiagnosisRecord.vue', 1, 1, '诊断记录菜单'),
+('system:knowledge', '知识库管理', 'menu', 'menu', '/knowledge', NULL, 0, 4, 'Reading', '/knowledge', 'views/Knowledge.vue', 1, 1, '知识库管理菜单'),
+('system:user-management', '用户管理', 'menu', 'menu', '/user-management', NULL, 0, 5, 'User', '/user-management', 'views/UserManagement.vue', 1, 1, '用户管理菜单'),
+('system:role-management', '角色管理', 'menu', 'menu', '/role-management', NULL, 0, 6, 'Lock', '/role-management', 'views/RoleManagement.vue', 1, 1, '角色管理菜单'),
 ('system:settings', '个人设置', 'menu', 'menu', '/settings', NULL, 0, 10, 'Setting', '/settings', 'views/Settings.vue', 1, 1, '个人设置菜单');
 
 -- Button Permissions
@@ -297,6 +299,14 @@ INSERT INTO sys_permission (permission_code, permission_name, resource_type, url
 ('diagnosis:ai', 'AI问诊', 'api', '/diagnosis/ai', 'POST', 0, 41, 1, 1, 'AI智能问诊'),
 ('diagnosis:record', '诊断记录', 'api', '/diagnosis/page', 'GET', 0, 42, 1, 1, '查看诊断记录'),
 ('diagnosis:detail', '诊断详情', 'api', '/diagnosis/*', 'GET', 0, 43, 1, 1, '查看诊断详情'),
+
+-- Knowledge APIs
+('knowledge:list', '知识库列表', 'api', '/knowledge/page', 'GET', 0, 44, 1, 1, '查看知识库列表'),
+('knowledge:detail', '知识库详情', 'api', '/knowledge/*', 'GET', 0, 45, 1, 1, '查看知识库详情'),
+('knowledge:create', '创建知识', 'api', '/knowledge', 'POST', 0, 46, 1, 1, '创建新知识'),
+('knowledge:update', '更新知识', 'api', '/knowledge', 'PUT', 0, 47, 1, 1, '更新知识信息'),
+('knowledge:delete-api', '删除知识', 'api', '/knowledge/*', 'DELETE', 0, 48, 1, 1, '删除知识'),
+('knowledge:audit-api', '审核知识', 'api', '/knowledge/audit/*', 'PUT', 0, 49, 1, 1, '审核知识'),
 
 -- System Management APIs
 ('system:config', '系统配置', 'api', '/system/config', 'GET', 0, 51, 1, 1, '查看系统配置'),
