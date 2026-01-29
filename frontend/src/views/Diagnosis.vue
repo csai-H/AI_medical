@@ -1,8 +1,8 @@
 <template>
   <div class="diagnosis-container">
     <el-row :gutter="20">
-      <!-- 左侧：对话区域 -->
-      <el-col :span="14">
+      <!-- 对话区域 -->
+      <el-col :span="24">
         <el-card class="chat-card">
           <template #header>
             <div class="card-header">
@@ -58,133 +58,14 @@
           </div>
         </el-card>
       </el-col>
-
-      <!-- 右侧：表单区域 -->
-      <el-col :span="10">
-        <el-card>
-          <template #header>
-            <div class="card-header">
-              <el-icon><Document /></el-icon>
-              <span>诊断表单</span>
-            </div>
-          </template>
-
-          <el-form ref="formRef" :model="diagnosisForm" label-width="100px">
-            <el-form-item label="患者">
-              <el-select
-                v-model="diagnosisForm.patientId"
-                placeholder="请选择患者"
-                filterable
-                style="width: 100%"
-              >
-                <el-option
-                  v-for="patient in patientList"
-                  :key="patient.id"
-                  :label="`${patient.name} (${patient.gender === 1 ? '男' : '女'} ${patient.age}岁)`"
-                  :value="patient.id"
-                />
-              </el-select>
-            </el-form-item>
-
-            <el-form-item label="主诉">
-              <el-input
-                v-model="diagnosisForm.chiefComplaint"
-                type="textarea"
-                :rows="2"
-                placeholder="请输入主诉"
-              />
-            </el-form-item>
-
-            <el-form-item label="症状">
-              <el-select
-                v-model="diagnosisForm.symptoms"
-                multiple
-                placeholder="请选择症状"
-                style="width: 100%"
-              >
-                <el-option label="头痛" value="头痛" />
-                <el-option label="发热" value="发热" />
-                <el-option label="咳嗽" value="咳嗽" />
-                <el-option label="咽痛" value="咽痛" />
-                <el-option label="腹痛" value="腹痛" />
-                <el-option label="恶心" value="恶心" />
-                <el-option label="呕吐" value="呕吐" />
-                <el-option label="腹泻" value="腹泻" />
-              </el-select>
-            </el-form-item>
-
-            <el-form-item label="现病史">
-              <el-input
-                v-model="diagnosisForm.presentIllness"
-                type="textarea"
-                :rows="3"
-                placeholder="请详细描述病情发展过程"
-              />
-            </el-form-item>
-
-            <el-form-item>
-              <el-button v-permission="'diagnosis:ai'" type="primary" :loading="diagnosing" @click="handleAiDiagnosis">
-                <el-icon><MagicStick /></el-icon>
-                AI智能诊断
-              </el-button>
-              <el-button @click="resetForm">重置</el-button>
-            </el-form-item>
-          </el-form>
-        </el-card>
-
-        <!-- 诊断结果 -->
-        <el-card v-if="diagnosisResult" class="result-card" style="margin-top: 20px">
-          <template #header>
-            <div class="card-header">
-              <el-icon><DocumentChecked /></el-icon>
-              <span>诊断结果</span>
-            </div>
-          </template>
-
-          <el-descriptions :column="1" border>
-            <el-descriptions-item label="可能诊断">
-              {{ diagnosisResult.diagnosis?.join('、') || '暂无' }}
-            </el-descriptions-item>
-            <el-descriptions-item label="诊断依据">
-              {{ diagnosisResult.basis || '暂无' }}
-            </el-descriptions-item>
-            <el-descriptions-item label="建议检查">
-              {{ diagnosisResult.examinations?.join('、') || '暂无' }}
-            </el-descriptions-item>
-            <el-descriptions-item label="治疗建议">
-              {{ diagnosisResult.treatment || '暂无' }}
-            </el-descriptions-item>
-            <el-descriptions-item label="注意事项">
-              {{ diagnosisResult.precautions || '暂无' }}
-            </el-descriptions-item>
-            <el-descriptions-item label="是否就医">
-              <el-tag :type="diagnosisResult.needDoctor ? 'danger' : 'success'">
-                {{ diagnosisResult.needDoctor ? '需要就医' : '无需就医' }}
-              </el-tag>
-              <span v-if="diagnosisResult.needDoctor" style="margin-left: 10px">
-                紧急程度：{{ diagnosisResult.urgency || '一般' }}
-              </span>
-            </el-descriptions-item>
-            <el-descriptions-item label="综合建议">
-              {{ diagnosisResult.suggestion || '暂无' }}
-            </el-descriptions-item>
-          </el-descriptions>
-
-          <div class="result-actions">
-            <el-button type="primary" @click="saveRecord">保存记录</el-button>
-            <el-button @click="$router.push('/diagnosis-record')">查看记录</el-button>
-          </div>
-        </el-card>
-      </el-col>
     </el-row>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { aiChat, aiDiagnosis } from '@/api/diagnosis'
-import { getPatientPage } from '@/api/patient'
+import { aiChat } from '@/api/diagnosis'
 import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
 import { marked } from 'marked'
@@ -221,11 +102,9 @@ const renderMarkdown = (content) => {
 const userStore = useUserStore()
 
 const chatContentRef = ref(null)
-const formRef = ref(null)
 
 const inputMessage = ref('')
 const loading = ref(false)
-const diagnosing = ref(false)
 
 const chatMessages = ref([
   {
@@ -234,26 +113,6 @@ const chatMessages = ref([
     time: dayjs().format('HH:mm:ss')
   }
 ])
-
-const diagnosisForm = ref({
-  patientId: null,
-  chiefComplaint: '',
-  symptoms: [],
-  presentIllness: ''
-})
-
-const patientList = ref([])
-const diagnosisResult = ref(null)
-
-// 加载患者列表
-const loadPatients = async () => {
-  try {
-    const res = await getPatientPage({ current: 1, size: 100 })
-    patientList.value = res.data.records || []
-  } catch (error) {
-    console.error('加载患者列表失败:', error)
-  }
-}
 
 // 发送消息
 const sendMessage = async () => {
@@ -301,50 +160,6 @@ const scrollToBottom = () => {
     chatContentRef.value.scrollTop = chatContentRef.value.scrollHeight
   }
 }
-
-// AI智能诊断
-const handleAiDiagnosis = async () => {
-  const valid = await formRef.value.validate().catch(() => false)
-  if (!valid) return
-
-  if (!diagnosisForm.value.patientId) {
-    ElMessage.warning('请选择患者')
-    return
-  }
-
-  if (!diagnosisForm.value.chiefComplaint) {
-    ElMessage.warning('请输入主诉')
-    return
-  }
-
-  diagnosing.value = true
-  try {
-    const res = await aiDiagnosis(diagnosisForm.value)
-    diagnosisResult.value = res.data
-    ElMessage.success('诊断完成')
-  } catch (error) {
-    ElMessage.error('诊断失败')
-  } finally {
-    diagnosing.value = false
-  }
-}
-
-// 重置表单
-const resetForm = () => {
-  formRef.value.resetFields()
-  diagnosisResult.value = null
-}
-
-// 保存记录
-const saveRecord = () => {
-  ElMessage.success('记录已保存')
-  diagnosisResult.value = null
-  resetForm()
-}
-
-onMounted(() => {
-  loadPatients()
-})
 </script>
 
 <style scoped>
@@ -433,15 +248,6 @@ onMounted(() => {
   margin-top: 10px;
   display: flex;
   justify-content: flex-end;
-}
-
-.result-card :deep(.el-descriptions__label) {
-  width: 120px;
-}
-
-.result-actions {
-  margin-top: 20px;
-  text-align: center;
 }
 
 /* Markdown样式 */

@@ -76,7 +76,25 @@
         <el-descriptions-item label="主诉" :span="2">{{ currentRecord.chiefComplaint }}</el-descriptions-item>
         <el-descriptions-item label="现病史" :span="2">{{ currentRecord.presentIllness }}</el-descriptions-item>
         <el-descriptions-item label="AI诊断" :span="2">
-          <pre style="white-space: pre-wrap">{{ currentRecord.aiDiagnosis }}</pre>
+          <div v-if="isAiDiagnosisJson" class="ai-diagnosis-content">
+            <div v-if="getAiDiagnosisData().possibleDiseases && getAiDiagnosisData().possibleDiseases.length">
+              <strong>可能的疾病：</strong>
+              <ul style="margin: 5px 0; padding-left: 20px;">
+                <li v-for="(disease, index) in getAiDiagnosisData().possibleDiseases" :key="index">
+                  {{ disease.name }} (置信度: {{ Math.round(disease.confidence * 100) }}%)
+                </li>
+              </ul>
+            </div>
+            <div v-if="getAiDiagnosisData().features">
+              <strong>皮肤特征：</strong>
+              <p style="margin: 5px 0;">{{ getAiDiagnosisData().features }}</p>
+            </div>
+            <div v-if="getAiDiagnosisData().suggestion">
+              <strong>治疗建议：</strong>
+              <p style="margin: 5px 0;">{{ getAiDiagnosisData().suggestion }}</p>
+            </div>
+          </div>
+          <div v-else style="white-space: pre-wrap;">{{ currentRecord.aiDiagnosis }}</div>
         </el-descriptions-item>
         <el-descriptions-item label="AI建议" :span="2">{{ currentRecord.aiSuggestion }}</el-descriptions-item>
         <el-descriptions-item label="医生诊断" :span="2">{{ currentRecord.doctorDiagnosis || '待确认' }}</el-descriptions-item>
@@ -198,6 +216,27 @@ const getImageUrls = () => {
     return JSON.parse(currentRecord.value.imageUrls)
   } catch {
     return []
+  }
+}
+
+// 判断AI诊断是否为JSON格式
+const isAiDiagnosisJson = () => {
+  if (!currentRecord.value.aiDiagnosis) return false
+  try {
+    const parsed = JSON.parse(currentRecord.value.aiDiagnosis)
+    return typeof parsed === 'object' && parsed !== null
+  } catch {
+    return false
+  }
+}
+
+// 解析AI诊断数据
+const getAiDiagnosisData = () => {
+  if (!currentRecord.value.aiDiagnosis) return {}
+  try {
+    return JSON.parse(currentRecord.value.aiDiagnosis)
+  } catch {
+    return {}
   }
 }
 

@@ -375,6 +375,7 @@ WHERE permission_code IN (
     'system:dashboard',
     'system:patient-management',
     'system:diagnosis',
+    'system:diagnosis-record',
     'system:knowledge',
     'system:settings',
     -- 患者管理API权限
