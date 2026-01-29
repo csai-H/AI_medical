@@ -111,7 +111,7 @@
                 <el-button type="primary" link size="small" :icon="Refresh" @click="refreshRecentRecords">
                   刷新
                 </el-button>
-                <el-button type="primary" size="small" @click="$router.push('/diagnosis-record')">
+                <el-button type="primary" size="small" @click="router.push('/diagnosis-record')">
                   查看全部
                 </el-button>
               </div>
