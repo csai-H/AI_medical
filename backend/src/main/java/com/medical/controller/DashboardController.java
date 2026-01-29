@@ -5,6 +5,7 @@ import com.medical.entity.DiagnosisRecord;
 import com.medical.service.DashboardService;
 import com.medical.vo.AccuracyDistributionVO;
 import com.medical.vo.DashboardStatisticsVO;
+import com.medical.vo.AgeDistributionVO;
 import com.medical.vo.DashboardTrendVO;
 import com.medical.vo.DiseaseDistributionVO;
 import lombok.RequiredArgsConstructor;
@@ -88,6 +89,20 @@ public class DashboardController {
             return Result.success(distribution);
         } catch (Exception e) {
             return Result.error("获取准确性分布失败: " + e.getMessage());
+        }
+    }
+
+
+    /**
+     * 获取患者年龄分布
+     */
+    @GetMapping("/age-distribution")
+    public Result<List<AgeDistributionVO>> getAgeDistribution() {
+        try {
+            List<AgeDistributionVO> distribution = dashboardService.getAgeDistribution();
+            return Result.success(distribution);
+        } catch (Exception e) {
+            return Result.error("获取年龄分布失败: " + e.getMessage());
         }
     }
 }

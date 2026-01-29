@@ -4,6 +4,7 @@ import com.medical.entity.DiagnosisRecord;
 import com.medical.vo.AccuracyDistributionVO;
 import com.medical.vo.DashboardStatisticsVO;
 import com.medical.vo.DashboardTrendVO;
+import com.medical.vo.AgeDistributionVO;
 import com.medical.vo.DiseaseDistributionVO;
 
 import java.util.List;
@@ -51,4 +52,12 @@ public interface DashboardService {
      * @return 准确性分布列表
      */
     List<AccuracyDistributionVO> getAccuracyDistribution();
+
+
+    /**
+     * 获取患者年龄分布数据
+     *
+     * @return 年龄分布列表
+     */
+    List<AgeDistributionVO> getAgeDistribution();
 }

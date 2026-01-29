@@ -88,7 +88,7 @@
     </el-row>
 
     <el-row :gutter="20" class="charts-row">
-      <el-col :span="24">
+      <el-col :span="12">
         <el-card v-loading="chartsLoading">
           <template #header>
             <div class="card-header">
@@ -96,6 +96,17 @@
             </div>
           </template>
           <div ref="pieChartRef" style="height: 350px"></div>
+        </el-card>
+      </el-col>
+
+      <el-col :span="12">
+        <el-card v-loading="chartsLoading">
+          <template #header>
+            <div class="card-header">
+              <span>患者年龄分布</span>
+            </div>
+          </template>
+          <div ref="ageChartRef" style="height: 350px"></div>
         </el-card>
       </el-col>
     </el-row>
@@ -154,7 +165,8 @@ import {
   getTrendData,
   getDiseaseDistribution,
   getRecentRecords,
-  getAccuracyDistribution
+  getAccuracyDistribution,
+  getAgeDistribution
 } from '@/api/dashboard'
 
 const router = useRouter()
@@ -179,9 +191,11 @@ const recentRecords = ref([])
 const trendChartRef = ref(null)
 const pieChartRef = ref(null)
 const accuracyChartRef = ref(null)
+const ageChartRef = ref(null)
 let trendChart = null
 let pieChart = null
 let accuracyChart = null
+let ageChart = null
 
 // 格式化时间
 const formatDateTime = (dateTime) => {
@@ -430,6 +444,99 @@ const initAccuracyChart = async () => {
   }
 }
 
+// 初始化年龄分布图
+const initAgeChart = async () => {
+  try {
+    chartsLoading.value = true
+    const res = await getAgeDistribution()
+
+    if (res.code === 200 && res.data) {
+      const data = res.data
+
+      if (!ageChart) {
+        ageChart = echarts.init(ageChartRef.value)
+      }
+
+      const option = {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          },
+          formatter: function(params) {
+            const item = params[0]
+            const data = item.data
+            return `${data.name}<br/>${data.label}<br/>人数: ${data.value}`
+          }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          data: data.map(item => item.range),
+          axisLabel: {
+            interval: 0,
+            rotate: 0
+          }
+        },
+        yAxis: {
+          type: 'value',
+          name: '患者人数'
+        },
+        series: [
+          {
+            name: '患者人数',
+            type: 'bar',
+            data: data.map(item => ({
+              value: item.count,
+              name: item.range,
+              label: item.label
+            })),
+            itemStyle: {
+              color: function(params) {
+                const label = params.data.label
+                // 为每个年龄段设置独特且鲜明的颜色
+                const colorMap = {
+                  '儿童青少年': '#91cc75',    // 浅绿色
+                  '青年': '#5470c6',         // 蓝色
+                  '中年': '#fac858',         // 黄色
+                  '中老年': '#ee6666',       // 红色
+                  '老年': '#73c0de'          // 青色
+                }
+                return colorMap[label] || '#909399'
+              },
+              borderRadius: [4, 4, 0, 0], // 圆角效果
+              borderWidth: 1,
+              borderColor: '#fff'
+            },
+            label: {
+              show: true,
+              position: 'top',
+              formatter: function(params) {
+                const data = params.data
+                return `${data.value}人`
+              },
+              fontSize: 12
+            }
+          }
+        ]
+      }
+      ageChart.setOption(option)
+    } else {
+      ElMessage.error(res.message || '获取年龄分布失败')
+    }
+  } catch (error) {
+    console.error('获取年龄分布失败:', error)
+    ElMessage.error('获取年龄分布失败')
+  } finally {
+    chartsLoading.value = false
+  }
+}
+
 // 获取最近记录
 const fetchRecentRecords = async () => {
   try {
@@ -470,6 +577,7 @@ const handleResize = () => {
   trendChart?.resize()
   pieChart?.resize()
   accuracyChart?.resize()
+  ageChart?.resize()
 }
 
 onMounted(() => {
@@ -478,6 +586,7 @@ onMounted(() => {
   initTrendChart()
   initPieChart()
   initAccuracyChart()
+  initAgeChart()
   fetchRecentRecords()
 
   // 监听窗口大小变化
@@ -489,6 +598,7 @@ onBeforeUnmount(() => {
   trendChart?.dispose()
   pieChart?.dispose()
   accuracyChart?.dispose()
+  ageChart?.dispose()
 
   // 移除事件监听
   window.removeEventListener('resize', handleResize)

@@ -11,6 +11,7 @@ import com.medical.mapper.PatientMapper;
 import com.medical.service.DashboardService;
 import com.medical.vo.AccuracyDistributionVO;
 import com.medical.vo.DashboardStatisticsVO;
+import com.medical.vo.AgeDistributionVO;
 import com.medical.vo.DashboardTrendVO;
 import com.medical.vo.DiseaseDistributionVO;
 import lombok.RequiredArgsConstructor;
@@ -240,5 +241,49 @@ public class DashboardServiceImpl implements DashboardService {
         return distributionMap.values().stream()
                 .filter(vo -> vo.getCount() > 0)
                 .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public List<AgeDistributionVO> getAgeDistribution() {
+        // 查询所有患者
+        LambdaQueryWrapper<Patient> wrapper = new LambdaQueryWrapper<>();
+        wrapper.isNotNull(Patient::getAge);
+        List<Patient> patients = patientMapper.selectList(wrapper);
+
+        // 初始化各个年龄段的计数
+        Map<String, AgeDistributionVO> distributionMap = new LinkedHashMap<>();
+        distributionMap.put("0-18", new AgeDistributionVO("0-18岁", "儿童青少年", 0));
+        distributionMap.put("19-35", new AgeDistributionVO("19-35岁", "青年", 0));
+        distributionMap.put("36-50", new AgeDistributionVO("36-50岁", "中年", 0));
+        distributionMap.put("51-65", new AgeDistributionVO("51-65岁", "中老年", 0));
+        distributionMap.put("66+", new AgeDistributionVO("66岁以上", "老年", 0));
+
+        // 统计各个年龄段的数量
+        for (Patient patient : patients) {
+            Integer age = patient.getAge();
+            if (age != null) {
+                String key;
+                if (age <= 18) {
+                    key = "0-18";
+                } else if (age <= 35) {
+                    key = "19-35";
+                } else if (age <= 50) {
+                    key = "36-50";
+                } else if (age <= 65) {
+                    key = "51-65";
+                } else {
+                    key = "66+";
+                }
+
+                AgeDistributionVO vo = distributionMap.get(key);
+                if (vo != null) {
+                    vo.setCount(vo.getCount() + 1);
+                }
+            }
+        }
+
+        // 转换为VO列表
+        return new ArrayList<>(distributionMap.values());
     }
 }

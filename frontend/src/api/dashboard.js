@@ -51,3 +51,13 @@ export const getAccuracyDistribution = () => {
     method: 'get'
   })
 }
+
+/**
+ * 获取患者年龄分布
+ */
+export const getAgeDistribution = () => {
+  return request({
+    url: '/dashboard/age-distribution',
+    method: 'get'
+  })
+}
