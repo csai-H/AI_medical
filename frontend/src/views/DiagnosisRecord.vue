@@ -81,6 +81,19 @@
         <el-descriptions-item label="AI建议" :span="2">{{ currentRecord.aiSuggestion }}</el-descriptions-item>
         <el-descriptions-item label="医生诊断" :span="2">{{ currentRecord.doctorDiagnosis || '待确认' }}</el-descriptions-item>
         <el-descriptions-item label="治疗方案" :span="2">{{ currentRecord.treatmentPlan || '待确认' }}</el-descriptions-item>
+        <el-descriptions-item label="皮肤图片" :span="2" v-if="getImageUrls().length > 0">
+          <div class="image-container">
+            <el-image
+              v-for="(url, index) in getImageUrls()"
+              :key="index"
+              :src="getFullImageUrl(url)"
+              :preview-src-list="getImageUrls().map(u => getFullImageUrl(u))"
+              fit="cover"
+              style="width: 100px; height: 100px; margin-right: 10px; margin-bottom: 10px;"
+              :initial-index="index"
+            />
+          </div>
+        </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
 
@@ -176,6 +189,24 @@ const handleReset = () => {
 const handleView = (row) => {
   currentRecord.value = row
   detailDialogVisible.value = true
+}
+
+// 获取图片URL列表
+const getImageUrls = () => {
+  if (!currentRecord.value.imageUrls) return []
+  try {
+    return JSON.parse(currentRecord.value.imageUrls)
+  } catch {
+    return []
+  }
+}
+
+// 获取完整图片URL
+const getFullImageUrl = (url) => {
+  if (!url) return ''
+  if (url.startsWith('http')) return url
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+  return baseUrl + url
 }
 
 // 确认诊断

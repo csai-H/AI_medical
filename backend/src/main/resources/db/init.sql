@@ -357,9 +357,15 @@ WHERE u.deleted = 0;
 -- ROLE PERMISSION ASSIGNMENTS
 -- ================================================
 
--- Admin Role (id=1) - All Permissions
+-- Admin Role (id=1) - All Permissions except Skin Analysis
 INSERT INTO sys_role_permission (role_id, permission_id)
-SELECT 1, id FROM sys_permission;
+SELECT 1, id FROM sys_permission
+WHERE permission_code NOT IN (
+    'system:skin-analysis',
+    'skin:analyze',
+    'skin:upload',
+    'skin:upload-batch'
+);
 
 -- Doctor Role (id=2) - Patient, Diagnosis and Knowledge Permissions
 INSERT INTO sys_role_permission (role_id, permission_id)

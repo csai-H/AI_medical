@@ -133,18 +133,6 @@
               </el-descriptions-item>
             </el-descriptions>
           </div>
-
-          <div class="result-section" v-if="analysisResult.imageUrls && analysisResult.imageUrls.length">
-            <h4>上传的图片</h4>
-            <el-image
-              v-for="(url, index) in analysisResult.imageUrls"
-              :key="index"
-              :src="getFullImageUrl(url)"
-              :preview-src-list="analysisResult.imageUrls.map(u => getFullImageUrl(u))"
-              fit="cover"
-              style="width: 100px; height: 100px; margin-right: 10px;"
-            />
-          </div>
         </el-card>
 
         <el-empty v-else description="请上传图片并开始分析" />
