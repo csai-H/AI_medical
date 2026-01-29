@@ -3,6 +3,7 @@ package com.medical.controller;
 import com.medical.common.Result;
 import com.medical.entity.DiagnosisRecord;
 import com.medical.service.DashboardService;
+import com.medical.vo.AccuracyDistributionVO;
 import com.medical.vo.DashboardStatisticsVO;
 import com.medical.vo.DashboardTrendVO;
 import com.medical.vo.DiseaseDistributionVO;
@@ -74,6 +75,19 @@ public class DashboardController {
             return Result.success(records);
         } catch (Exception e) {
             return Result.error("获取最近记录失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取AI诊断准确性分布
+     */
+    @GetMapping("/accuracy-distribution")
+    public Result<List<AccuracyDistributionVO>> getAccuracyDistribution() {
+        try {
+            List<AccuracyDistributionVO> distribution = dashboardService.getAccuracyDistribution();
+            return Result.success(distribution);
+        } catch (Exception e) {
+            return Result.error("获取准确性分布失败: " + e.getMessage());
         }
     }
 }

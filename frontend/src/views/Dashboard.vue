@@ -61,11 +61,11 @@
 
     <!-- 图表区域 -->
     <el-row :gutter="20" class="charts-row">
-      <el-col :span="16">
+      <el-col :span="12">
         <el-card v-loading="chartsLoading">
           <template #header>
             <div class="card-header">
-              <span>问诊趋势</span>
+              <span>AI问诊趋势</span>
               <el-button type="primary" link size="small" :icon="Refresh" @click="refreshTrendChart">
                 刷新
               </el-button>
@@ -75,7 +75,20 @@
         </el-card>
       </el-col>
 
-      <el-col :span="8">
+      <el-col :span="12">
+        <el-card v-loading="chartsLoading">
+          <template #header>
+            <div class="card-header">
+              <span>AI诊断准确性分布</span>
+            </div>
+          </template>
+          <div ref="accuracyChartRef" style="height: 350px"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <el-row :gutter="20" class="charts-row">
+      <el-col :span="24">
         <el-card v-loading="chartsLoading">
           <template #header>
             <div class="card-header">
@@ -140,7 +153,8 @@ import {
   getStatistics,
   getTrendData,
   getDiseaseDistribution,
-  getRecentRecords
+  getRecentRecords,
+  getAccuracyDistribution
 } from '@/api/dashboard'
 
 const router = useRouter()
@@ -164,8 +178,10 @@ const recentRecords = ref([])
 // 图表引用
 const trendChartRef = ref(null)
 const pieChartRef = ref(null)
+const accuracyChartRef = ref(null)
 let trendChart = null
 let pieChart = null
+let accuracyChart = null
 
 // 格式化时间
 const formatDateTime = (dateTime) => {
@@ -221,7 +237,7 @@ const initTrendChart = async () => {
           trigger: 'axis'
         },
         legend: {
-          data: ['问诊人数', 'AI诊断']
+          data: ['AI诊断']
         },
         xAxis: {
           type: 'category',
@@ -232,16 +248,27 @@ const initTrendChart = async () => {
         },
         series: [
           {
-            name: '问诊人数',
-            type: 'line',
-            data: data.diagnosisCounts || [],
-            smooth: true
-          },
-          {
             name: 'AI诊断',
             type: 'line',
             data: data.aiDiagnosisCounts || [],
-            smooth: true
+            smooth: true,
+            itemStyle: {
+              color: '#67C23A'
+            },
+            areaStyle: {
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [{
+                  offset: 0, color: 'rgba(103, 194, 58, 0.3)'
+                }, {
+                  offset: 1, color: 'rgba(103, 194, 58, 0.05)'
+                }]
+              }
+            }
           }
         ]
       }
@@ -307,6 +334,102 @@ const initPieChart = async () => {
   }
 }
 
+// 初始化准确性分布图
+const initAccuracyChart = async () => {
+  try {
+    chartsLoading.value = true
+    const res = await getAccuracyDistribution()
+
+    if (res.code === 200 && res.data) {
+      const data = res.data
+
+      if (!accuracyChart) {
+        accuracyChart = echarts.init(accuracyChartRef.value)
+      }
+
+      const option = {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          },
+          formatter: function(params) {
+            const item = params[0]
+            const data = item.data
+            return `${data.name}<br/>${data.label}<br/>数量: ${data.value}`
+          }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          data: data.map(item => item.range),
+          axisLabel: {
+            interval: 0,
+            rotate: 0
+          }
+        },
+        yAxis: {
+          type: 'value',
+          name: '诊断数量'
+        },
+        series: [
+          {
+            name: '诊断数量',
+            type: 'bar',
+            data: data.map(item => ({
+              value: item.count,
+              name: item.range,
+              label: item.label
+            })),
+            itemStyle: {
+              color: function(params) {
+                const label = params.data.label
+                // 为每个准确性等级设置独特且鲜明的颜色
+                const colorMap = {
+                  '完全准确': '#52c41a',      // 鲜绿色
+                  '非常准确': '#1890ff',      // 鲜蓝色
+                  '准确': '#13c2c2',         // 青色
+                  '基本准确': '#faad14',     // 金橙色
+                  '部分准确': '#fa8c16',     // 深橙色
+                  '不太准确': '#f5222d',     // 鲜红色
+                  '基本不准确': '#eb2f96',    // 粉红色
+                  '完全不准确': '#722ed1'    // 紫色
+                }
+                return colorMap[label] || '#909399'
+              },
+              borderRadius: [4, 4, 0, 0], // 圆角效果
+              borderWidth: 1,
+              borderColor: '#fff'
+            },
+            label: {
+              show: true,
+              position: 'top',
+              formatter: function(params) {
+                const data = params.data
+                return `${data.label}\n${data.value}例`
+              },
+              fontSize: 12
+            }
+          }
+        ]
+      }
+      accuracyChart.setOption(option)
+    } else {
+      ElMessage.error(res.message || '获取准确性分布失败')
+    }
+  } catch (error) {
+    console.error('获取准确性分布失败:', error)
+    ElMessage.error('获取准确性分布失败')
+  } finally {
+    chartsLoading.value = false
+  }
+}
+
 // 获取最近记录
 const fetchRecentRecords = async () => {
   try {
@@ -346,6 +469,7 @@ const viewDetail = (row) => {
 const handleResize = () => {
   trendChart?.resize()
   pieChart?.resize()
+  accuracyChart?.resize()
 }
 
 onMounted(() => {
@@ -353,6 +477,7 @@ onMounted(() => {
   fetchStatistics()
   initTrendChart()
   initPieChart()
+  initAccuracyChart()
   fetchRecentRecords()
 
   // 监听窗口大小变化
@@ -363,6 +488,7 @@ onBeforeUnmount(() => {
   // 销毁图表实例
   trendChart?.dispose()
   pieChart?.dispose()
+  accuracyChart?.dispose()
 
   // 移除事件监听
   window.removeEventListener('resize', handleResize)

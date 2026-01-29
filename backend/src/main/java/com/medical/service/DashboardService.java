@@ -1,6 +1,7 @@
 package com.medical.service;
 
 import com.medical.entity.DiagnosisRecord;
+import com.medical.vo.AccuracyDistributionVO;
 import com.medical.vo.DashboardStatisticsVO;
 import com.medical.vo.DashboardTrendVO;
 import com.medical.vo.DiseaseDistributionVO;
@@ -43,4 +44,11 @@ public interface DashboardService {
      * @return 诊断记录列表
      */
     List<DiagnosisRecord> getRecentRecords(Integer limit);
+
+    /**
+     * 获取AI诊断准确性分布数据
+     *
+     * @return 准确性分布列表
+     */
+    List<AccuracyDistributionVO> getAccuracyDistribution();
 }

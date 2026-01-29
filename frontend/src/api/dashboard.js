@@ -41,3 +41,13 @@ export const getRecentRecords = (limit = 5) => {
     params: { limit }
   })
 }
+
+/**
+ * 获取AI诊断准确性分布
+ */
+export const getAccuracyDistribution = () => {
+  return request({
+    url: '/dashboard/accuracy-distribution',
+    method: 'get'
+  })
+}

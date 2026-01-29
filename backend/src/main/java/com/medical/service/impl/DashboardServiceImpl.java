@@ -9,6 +9,7 @@ import com.medical.entity.Patient;
 import com.medical.mapper.DiagnosisRecordMapper;
 import com.medical.mapper.PatientMapper;
 import com.medical.service.DashboardService;
+import com.medical.vo.AccuracyDistributionVO;
 import com.medical.vo.DashboardStatisticsVO;
 import com.medical.vo.DashboardTrendVO;
 import com.medical.vo.DiseaseDistributionVO;
@@ -199,5 +200,45 @@ public class DashboardServiceImpl implements DashboardService {
                 .last("LIMIT " + limit);
 
         return diagnosisRecordMapper.selectList(wrapper);
+    }
+
+    @Override
+    public List<AccuracyDistributionVO> getAccuracyDistribution() {
+        // 查询所有已确认且有匹配度的记录
+        LambdaQueryWrapper<DiagnosisRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.isNotNull(DiagnosisRecord::getMatchRate)
+                .eq(DiagnosisRecord::getStatus, 1); // 已确认
+        List<DiagnosisRecord> records = diagnosisRecordMapper.selectList(wrapper);
+
+        // 初始化各个准确率类别的计数
+        Map<String, AccuracyDistributionVO> distributionMap = new LinkedHashMap<>();
+        distributionMap.put("100", new AccuracyDistributionVO("100%", "完全准确", 0));
+        distributionMap.put("90", new AccuracyDistributionVO("90%", "非常准确", 0));
+        distributionMap.put("80", new AccuracyDistributionVO("80%", "准确", 0));
+        distributionMap.put("70", new AccuracyDistributionVO("70%", "基本准确", 0));
+        distributionMap.put("60", new AccuracyDistributionVO("60%", "部分准确", 0));
+        distributionMap.put("50", new AccuracyDistributionVO("50%", "不太准确", 0));
+        distributionMap.put("30", new AccuracyDistributionVO("30%", "基本不准确", 0));
+        distributionMap.put("0", new AccuracyDistributionVO("0%", "完全不准确", 0));
+
+        // 统计各个类别的数量
+        for (DiagnosisRecord record : records) {
+            BigDecimal matchRate = record.getMatchRate();
+            if (matchRate != null) {
+                int rate = matchRate.intValue();
+                String key = String.valueOf(rate);
+
+                // 只统计预定义的准确率值
+                if (distributionMap.containsKey(key)) {
+                    AccuracyDistributionVO vo = distributionMap.get(key);
+                    vo.setCount(vo.getCount() + 1);
+                }
+            }
+        }
+
+        // 转换为VO列表（过滤掉数量为0的项）
+        return distributionMap.values().stream()
+                .filter(vo -> vo.getCount() > 0)
+                .collect(Collectors.toList());
     }
 }
