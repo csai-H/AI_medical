@@ -37,6 +37,14 @@
             <el-tag v-else type="info">已完成</el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="matchRate" label="AI准确性" width="120">
+          <template #default="{ row }">
+            <el-tag v-if="row.matchRate !== null && row.matchRate !== undefined" :type="getAccuracyTagType(row.matchRate)">
+              {{ getAccuracyLabel(row.matchRate) }}
+            </el-tag>
+            <span v-else style="color: #909399;">-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="createTime" label="诊断时间" width="180" />
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
@@ -98,6 +106,12 @@
         </el-descriptions-item>
         <el-descriptions-item label="AI建议" :span="2">{{ currentRecord.aiSuggestion }}</el-descriptions-item>
         <el-descriptions-item label="医生诊断" :span="2">{{ currentRecord.doctorDiagnosis || '待确认' }}</el-descriptions-item>
+        <el-descriptions-item label="AI诊断准确性" :span="2">
+          <el-tag v-if="currentRecord.matchRate !== null && currentRecord.matchRate !== undefined" :type="getAccuracyTagType(currentRecord.matchRate)">
+            {{ getAccuracyLabel(currentRecord.matchRate) }} ({{ currentRecord.matchRate }}%)
+          </el-tag>
+          <span v-else style="color: #909399;">待评估</span>
+        </el-descriptions-item>
         <el-descriptions-item label="治疗方案" :span="2">{{ currentRecord.treatmentPlan || '待确认' }}</el-descriptions-item>
         <el-descriptions-item label="皮肤图片" :span="2" v-if="getImageUrls().length > 0">
           <div class="image-container">
@@ -134,6 +148,18 @@
             placeholder="请输入治疗方案"
           />
         </el-form-item>
+        <el-form-item label="AI诊断准确性">
+          <el-radio-group v-model="confirmForm.matchRate">
+            <el-radio :label="100">完全准确（100%）- AI诊断与医生诊断完全一致</el-radio>
+            <el-radio :label="90">非常准确（90%）- AI诊断与医生诊断基本一致</el-radio>
+            <el-radio :label="80">准确（80%）- AI诊断大部分正确</el-radio>
+            <el-radio :label="70">基本准确（70%）- AI诊断部分正确</el-radio>
+            <el-radio :label="60">部分准确（60%）- AI诊断有一定参考价值</el-radio>
+            <el-radio :label="50">不太准确（50%）- AI诊断仅提供少量参考</el-radio>
+            <el-radio :label="30">基本不准确（30%）- AI诊断大部分错误</el-radio>
+            <el-radio :label="0">完全不准确（0%）- AI诊断完全错误</el-radio>
+          </el-radio-group>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="confirmDialogVisible = false">取消</el-button>
@@ -169,7 +195,8 @@ const currentRecord = ref({})
 const confirmForm = reactive({
   recordId: null,
   doctorDiagnosis: '',
-  treatmentPlan: ''
+  treatmentPlan: '',
+  matchRate: 100 // 默认为100（准确）
 })
 
 // 加载数据
@@ -253,6 +280,7 @@ const handleConfirm = (row) => {
   confirmForm.recordId = row.id
   confirmForm.doctorDiagnosis = ''
   confirmForm.treatmentPlan = ''
+  confirmForm.matchRate = 100 // 重置为默认值（准确）
   confirmDialogVisible.value = true
 }
 
@@ -266,6 +294,27 @@ const handleConfirmSubmit = async () => {
   } catch (error) {
     ElMessage.error('确认失败')
   }
+}
+
+// 获取准确性标签类型（用于显示不同颜色）
+const getAccuracyTagType = (matchRate) => {
+  if (matchRate >= 90) return 'success' // 绿色
+  if (matchRate >= 70) return 'warning' // 橙色
+  if (matchRate >= 50) return 'info' // 灰色
+  return 'danger' // 红色
+}
+
+// 获取准确性文本标签
+const getAccuracyLabel = (matchRate) => {
+  if (matchRate === 100) return '完全准确'
+  if (matchRate === 90) return '非常准确'
+  if (matchRate === 80) return '准确'
+  if (matchRate === 70) return '基本准确'
+  if (matchRate === 60) return '部分准确'
+  if (matchRate === 50) return '不太准确'
+  if (matchRate === 30) return '基本不准确'
+  if (matchRate === 0) return '完全不准确'
+  return `${matchRate}%`
 }
 
 onMounted(() => {

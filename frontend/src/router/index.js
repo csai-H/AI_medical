@@ -29,7 +29,17 @@ const dynamicRoutes = [
     path: '/',
     name: 'Layout',
     component: () => import('@/layout/Index.vue'),
-    redirect: '/dashboard',
+    redirect: () => {
+      // 动态重定向：根据用户角色决定跳转路径
+      const userStore = useUserStore()
+      const userRole = userStore.userInfo?.role
+      if (userRole === 2) {
+        // 普通用户跳转到AI问诊
+        return '/diagnosis'
+      }
+      // 管理员和医生跳转到dashboard
+      return '/dashboard'
+    },
     children: [
       {
         path: 'dashboard',
@@ -66,6 +76,12 @@ const dynamicRoutes = [
         name: 'Knowledge',
         component: () => import('@/views/Knowledge.vue'),
         meta: { title: '知识库管理', icon: 'Reading' }
+      },
+      {
+        path: 'medical-knowledge',
+        name: 'MedicalKnowledge',
+        component: () => import('@/views/MedicalKnowledge.vue'),
+        meta: { title: '医疗知识库', icon: 'Notebook' }
       },
       {
         path: 'user-management',
@@ -210,7 +226,15 @@ router.beforeEach(async (to, from, next) => {
 
   // 已登录访问登录页，跳转到首页
   if ((to.path === '/login' || to.path === '/register') && userStore.token) {
-    next('/')
+    // 根据用户角色决定跳转路径
+    const userRole = userStore.userInfo?.role
+    if (userRole === 2) {
+      // 普通用户跳转到AI问诊
+      next('/diagnosis')
+    } else {
+      // 管理员和医生跳转到首页（会被重定向到dashboard）
+      next('/')
+    }
     return
   }
 
@@ -233,6 +257,17 @@ router.beforeEach(async (to, from, next) => {
   if (to.matched.length === 0) {
     next('/404')
     return
+  }
+
+  // 访问根路径时，根据用户角色重定向
+  if (to.path === '/' && userStore.token) {
+    const userRole = userStore.userInfo?.role
+    if (userRole === 2) {
+      // 普通用户重定向到AI问诊
+      next('/diagnosis')
+      return
+    }
+    // 管理员和医生继续，会被路由配置重定向到dashboard
   }
 
   next()

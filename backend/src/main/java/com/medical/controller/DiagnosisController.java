@@ -11,6 +11,7 @@ import com.medical.service.SparkAiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 /**
@@ -112,6 +113,17 @@ public class DiagnosisController {
             Long recordId = Long.parseLong(params.get("recordId").toString());
             String doctorDiagnosis = (String) params.get("doctorDiagnosis");
             String treatmentPlan = (String) params.get("treatmentPlan");
+            
+            // 获取匹配度（如果提供）
+            Object matchRateObj = params.get("matchRate");
+            BigDecimal matchRate = null;
+            if (matchRateObj != null) {
+                if (matchRateObj instanceof Number) {
+                    matchRate = new BigDecimal(matchRateObj.toString());
+                } else if (matchRateObj instanceof String) {
+                    matchRate = new BigDecimal((String) matchRateObj);
+                }
+            }
 
             DiagnosisRecord record = diagnosisRecordService.getById(recordId);
             if (record == null) {
@@ -120,6 +132,7 @@ public class DiagnosisController {
 
             record.setDoctorDiagnosis(doctorDiagnosis);
             record.setTreatmentPlan(treatmentPlan);
+            record.setMatchRate(matchRate); // 设置匹配度
             record.setStatus(1); // 已确认
 
             diagnosisRecordService.updateById(record);
