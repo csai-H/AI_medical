@@ -1,15 +1,5 @@
 <template>
   <div class="skin-analysis-container">
-    <el-page-header @back="$router.back()" title="返回">
-      <template #content>
-        <div class="page-header-content">
-          <span>皮肤图片AI分析</span>
-        </div>
-      </template>
-    </el-page-header>
-
-    <el-divider />
-
     <el-alert
       title="AI辅助诊断仅供参考，如有不适请及时就医"
       type="warning"
